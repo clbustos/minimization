@@ -1,0 +1,7 @@
+History.txt
+LICENSE.txt
+Manifest.txt
+README.txt
+Rakefile
+lib/minimization.rb
+test/test_minimization.rb
