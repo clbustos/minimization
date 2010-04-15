@@ -250,7 +250,11 @@ module Minimization
         k+=1
         result=brent_iterate
         raise "Error on iteration" if !result
-        @log+=sprintf("%d: [%0.5f - %0.5f] ->  [%0.5f - %0.5f] E: %0.6f\n", k, @x_lower, @x_upper, @f_lower, @f_upper, (@x_lower-@x_upper).abs)
+        begin 
+          @log+=sprintf("%d: [%0.5f - %0.5f] ->  [%0.5f - %0.5f] E: %0.6f\n", k, @x_lower, @x_upper, @f_lower, @f_upper, (@x_lower-@x_upper).abs)
+        rescue =>@e
+          @log+=@e.to_s
+        end
       end
       @iterations=k
       return true
