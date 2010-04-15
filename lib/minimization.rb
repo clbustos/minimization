@@ -19,7 +19,7 @@
 require 'text-table'
 # Algorithms for unidimensional minimization
 module Minimization
-  VERSION="0.3.0"
+  VERSION="0.2.0"
   FailedIteration=Class.new(Exception)
   # Base class for unidimensional minimizers
   class Unidimensional
