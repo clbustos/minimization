@@ -9,6 +9,7 @@ Minimization algorithms on pure Ruby.
 == FEATURES/PROBLEMS:
 
 Unidimensional:
+* Newton-Rahpson (requires first and second derivative)
 * Golden Section
 * Brent (Port of GSL code)
 

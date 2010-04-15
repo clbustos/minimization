@@ -4,4 +4,6 @@ Manifest.txt
 README.txt
 Rakefile
 lib/minimization.rb
-test/test_minimization.rb
+spec/minimization_unidimensional_spec.rb
+spec/spec.opts
+spec/spec_helper.rb

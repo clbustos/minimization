@@ -16,14 +16,14 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #
-
+require 'text-table'
+# Algorithms for unidimensional minimization
 module Minimization
-
-  VERSION="0.1.1"
+  VERSION="0.3.0"
   FailedIteration=Class.new(Exception)
   # Base class for unidimensional minimizers
   class Unidimensional
-    # Default value for error
+    # Default value for error on f(x)
     EPSILON=1e-6
     # Default number of maximum iterations
     MAX_ITERATIONS=100
@@ -31,10 +31,14 @@ module Minimization
     attr_reader :x_minimum
     # Minimum value for f(x)
     attr_reader :f_minimum
-    # Log of iterations
+    # Log of iterations. Should be an array
     attr_reader :log
+    # Name of fields of log
+    attr_reader :log_header
     # Absolute error on x
     attr_accessor :epsilon
+    # Expected value. Fast minimum finding if set
+    attr_reader :expected
     # Create a new minimizer
     def initialize(lower, upper, proc)
       raise "first argument  should be lower than second" if lower>=upper
@@ -46,26 +50,93 @@ module Minimization
       @max_iteration=MAX_ITERATIONS
       @epsilon=EPSILON
       @iterations=0
-      @log=""
+      @log=[]
+      @log_header=%w{I xl xh f(xl) f(xh) dx df(x)}
+    end
+    # Set expected value
+    def expected=(v)
+      @expected=v
+    end
+    def log_summary
+      @log.join("\n")
     end
     # Convenience method to minimize
-    # Usage:
+    # == Parameters:
+    # * <tt>lower</tt>: Lower possible value
+    # * <tt>upper</tt>: Higher possible value
+    # * <tt>expected</tt>: Optional expected value. Faster the search is near correct value.
+    # * <tt>&block</tt>: Block with function to minimize
+    # == Usage:
     #   minimizer=Minimization::GoldenSection.minimize(-1000, 1000) {|x|
     #             x**2 }
-    #
+    # 
     def self.minimize(lower,upper,expected=nil,&block)
       minimizer=new(lower,upper,block)
       minimizer.expected=expected unless expected.nil?
       raise FailedIteration unless minimizer.iterate
       minimizer
     end
+    # Iterate to find the minimum
+    def iterate
+      raise "You should implement this"
+    end
     def f(x)
       @proc.call(x)
     end
   end
+  # Classic Newton-Raphson minimization method.  
+  # Requires first and second derivative
+  # == Usage
+  #   f   = lambda {|x| x**2}
+  #   fd  = lambda {|x| 2x}
+  #   fdd = lambda {|x| 2}
+  #   min = Minimization::NewtonRaphson.new(-1000,1000, f,fd,fdd)
+  #   min.iterate
+  #   min.x_minimum
+  #   min.f_minimum
+  #   
+  class NewtonRaphson < Unidimensional
+    # == Parameters:
+    # * <tt>lower</tt>: Lower possible value
+    # * <tt>upper</tt>: Higher possible value
+    # * <tt>proc</tt>: Original function
+    # * <tt>proc_1d</tt>: First derivative
+    # * <tt>proc_2d</tt>: Second derivative
+    # 
+    def initialize(lower, upper, proc, proc_1d, proc_2d)
+      super(lower,upper,proc)
+      @proc_1d=proc_1d
+      @proc_2d=proc_2d
+    end
+    # Raises an error
+    def self.minimize(*args)
+      raise "You should use #new and #iterate"
+    end
+    def iterate
+      # First
+      x_prev=@lower
+      x=@expected
+      failed=true
+      k=0
+      while (x-x_prev).abs > @epsilon and k<@max_iteration
+        k+=1
+        x_prev=x
+        x=x-(@proc_1d.call(x).quo(@proc_2d.call(x)))
+        f_prev=f(x_prev)
+        f=f(x)
+        x_min,x_max=[x,x_prev].min, [x,x_prev].max 
+        f_min,f_max=[f,f_prev].min, [f,f_prev].max 
+        @log << [k, x_min, x_max, f_min, f_max, (x_prev-x).abs, (f-f_prev).abs]
+      end
+      raise FailedIteration, "Not converged" if k>=@max_iteration
+      @x_minimum = x;
+      @f_minimum = f(x);
+    end
+  end
   # = Golden Section Minimizer.
-  # Basic minimization algorithm. Slow, but robust
-  # Use:
+  # Basic minimization algorithm. Slow, but robust.
+  # See Unidimensional for methods.
+  # == Usage.
   #  require 'minimization'
   #  min=Minimization::GoldenSection.new(-1000,20000  , proc {|x| (x+1)**2}
   #  min.expected=1.5  # Expected value
@@ -74,10 +145,6 @@ module Minimization
   #  min.f_minimum
   #  min.log
   class GoldenSection < Unidimensional
-    attr_accessor :expected
-    def initialize(lower,upper, proc)
-      super
-    end
     # Start the iteration
     def iterate
       ax=@lower
@@ -103,7 +170,6 @@ module Minimization
 
 
       while (x3-x0).abs > @epsilon and k<@max_iteration
-        @log+=sprintf("k=%4d, |a-b|=%e\n", k, (x3-x0).abs)
         if f2 < f1
           x0 = x1;
           x1 = x2;
@@ -117,6 +183,8 @@ module Minimization
           f2 = f1;
           f1 = f(x1);
         end
+        @log << [k, x3,x0, f1,f2,(x3-x0).abs, (f1-f2).abs]
+        
         k +=1;
       end
 
@@ -132,7 +200,9 @@ module Minimization
 
   end
 
-  # Direct port of Brent algorithm found on GSL
+  # Direct port of Brent algorithm found on GSL.
+  # See Unidimensional for methods.
+  # == Usage
   #  min=Minimization::Brent.new(-1000,20000  , proc {|x| (x+1)**2}
   #  min.expected=1.5  # Expected value
   #  min.iterate
@@ -175,6 +245,7 @@ module Minimization
       @f_minimum=f(v)
       @do_bracketing=false
     end
+    
     def bracketing
       eval_max=10
       f_left = @f_lower;
@@ -198,7 +269,7 @@ module Minimization
 
 
       begin
-        @log+=sprintf("B%d: [%0.5f - %0.5f] ->  [%0.5f - %0.5f] E: %0.6f\n", nb_eval, x_left, x_right, f_left, f_right, (x_left-x_right).abs)
+        @log << ["B#{nb_eval}", x_left, x_right, f_left, f_right, (x_left-x_right).abs, (f_left-f_right).abs]
         if (f_center < f_left )
           if (f_center < f_right)
             @x_lower = x_left;
@@ -249,11 +320,11 @@ module Minimization
       while k<@max_iteration and (@x_lower-@x_upper).abs>@epsilon
         k+=1
         result=brent_iterate
-        raise "Error on iteration" if !result
+        raise FailedIteration,"Error on iteration" if !result
         begin 
-          @log+=sprintf("%d: [%0.5f - %0.5f] ->  [%0.5f - %0.5f] E: %0.6f\n", k, @x_lower, @x_upper, @f_lower, @f_upper, (@x_lower-@x_upper).abs)
+          @log << [k, @x_lower, @x_upper, @f_lower, @f_upper, (@x_lower-@x_upper).abs, (@f_lower-@f_upper).abs]
         rescue =>@e
-          @log+=@e.to_s
+          @log << [k, @e.to_s,nil,nil,nil,nil,nil]
         end
       end
       @iterations=k
