@@ -1,6 +1,6 @@
 = minimization
 
-http://ruby-statsample.rubyforge.org/
+* http://github.com/clbustos/minimization
 
 == DESCRIPTION:
 
@@ -31,6 +31,10 @@ puts d.f_minimum
 == INSTALL:
 
   sudo gem install minimization 
+
+== API:
+
+http://ruby-statsample.rubyforge.org/minimization/
 
 == LICENSE:
 
