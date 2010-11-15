@@ -16,10 +16,10 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #
-require 'text-table'
 # Algorithms for unidimensional minimization
+require 'text-table'
 module Minimization
-  VERSION="0.2.0"
+  VERSION="0.2.1"
   FailedIteration=Class.new(Exception)
   # Base class for unidimensional minimizers
   class Unidimensional
@@ -39,6 +39,8 @@ module Minimization
     attr_accessor :epsilon
     # Expected value. Fast minimum finding if set
     attr_reader :expected
+    # Numbers of iterations
+    attr_reader :iterations
     # Create a new minimizer
     def initialize(lower, upper, proc)
       raise "first argument  should be lower than second" if lower>=upper
