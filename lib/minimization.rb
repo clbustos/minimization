@@ -442,4 +442,45 @@ module Minimization
 
     end
   end
+
+  # = Bisection Method for Minimization.
+  # See Unidimensional for methods.
+  # == Usage.
+  #  require 'minimization'
+  #  min=Minimization::Bisection.new(1,2  , proc {|x| (x)**3-(x)-2}
+  #  min.iterate
+  #  min.x_minimum
+  #  min.f_minimum
+  #  min.log
+  # Source:
+  #   * R.L. Burden, J. Faires: Numerical Analysis 
+  class Bisection < Unidimensional
+
+    def iterate()
+      ax = @lower
+      cx = @upper
+      k = 0;
+      while (ax-cx).abs > @epsilon and k<@max_iteration
+        bx = (ax + cx).quo(2);
+        fa = f(ax);
+        fb = f(bx);
+        fc = f(cx);
+        if (fa*fb <0)
+          cx = bx;
+        else (fb*fc <0)
+          ax = bx;
+        end
+        k +=1;
+        @log << [k, ax.to_f, cx.to_f, f(ax).to_f, f(cx).to_f, (ax-cx).abs.to_f, (f(ax)-f(cx)).abs.to_f]
+      end
+      
+      if (fa<fc)
+        @x_minimum,@f_minimum = ax.to_f, f(ax).to_f;
+      else 
+        @x_minimum,@f_minimum = cx.to_f, f(cx).to_f;
+      end
+
+    end
+  end
+
 end
