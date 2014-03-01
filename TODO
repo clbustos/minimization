@@ -1,13 +1,9 @@
-Start work on the following functions :
+Following functions can be implemented in this module:
   Unidimensional:
     * Fibonacci Search Algorithm
   Multidimensional:
     * Powell's method
     * Nelder–Mead method
- 
- and
- 
- Do more research to find more Minmax algorithms.
  
 References:
   * Numerical Recipies in C++, Flannery et al.
