@@ -442,4 +442,172 @@ module Minimization
 
     end
   end
+
+  class PointValuePair
+    attr_reader :point
+    attr_reader :value
+    def initialize(point, value)
+        @point = point
+        @value = value
+    end
+  end
+
+  class Multidimensional
+    # Default value for error on f(x)
+    EPSILON=1e-6
+    # Default number of maximum iterations
+    MAX_ITERATIONS=100
+    # Minimum value for x
+    attr_reader :x_minimum
+    # Minimum value for f(x)
+    attr_reader :f_minimum
+    # Log of iterations. Should be an array
+    attr_reader :log
+    # Name of fields of log
+    attr_reader :log_header
+    # Absolute error on x
+    attr_accessor :epsilon
+    # Expected value. Fast minimum finding if set
+    attr_reader :expected
+    # Numbers of iterations
+    attr_reader :iterations
+    attr_reader :start_point
+    attr_reader :startConfiguration
+    # Create a new minimizer
+    def initialize(lower, upper, dimensions, proc)
+      raise "first argument  should be lower than second" if lower>=upper
+      @lower=lower
+      @upper=upper
+      @proc=proc
+      golden = 0.3819660;
+      @expected = @lower + golden * (@upper - @lower);
+      @max_iteration=MAX_ITERATIONS
+      @epsilon=EPSILON
+      @iterations=0
+      @log=[]
+      @log_header=%w{I xl xh f(xl) f(xh) dx df(x)}
+      @startConfiguration = Array.new(dimensions)
+      0.upto(dimensions-1) do |i|
+        @startConfiguration[i] = Array.new(dimensions)
+        #0.upto(dimensions-1) do |j|
+        #  @startConfiguration[i][j] = 0.0
+        #end
+      end
+    end
+    # Set expected value
+    def expected=(v)
+      @expected=v
+    end
+    def log_summary
+      @log.join("\n")
+    end
+      
+    def self.minimize(lower,upper,expected=nil,&block)
+      minimizer=new(lower,upper,block)
+      minimizer.expected=expected unless expected.nil?
+      raise FailedIteration unless minimizer.iterate
+      minimizer
+    end
+    # Iterate to find the minimum
+    def iterate
+      raise "You should implement this"
+    end
+    def f(x)
+      @proc.call(x)
+    end
+  end
+
+  class NelderMead < Multidimensional
+    # == Parameters:
+    # * <tt>lower</tt>: Lower possible value
+    # * <tt>upper</tt>: Higher possible value
+    # * <tt>proc</tt>: Original function
+
+
+    def initialize(lower, upper, dimensions, start_point, proc)
+      super(lower, upper, dimensions, proc)
+      @rho         = 1    # Reflection coefficient
+      @khi         = 2    # Expansion coefficient
+      @gamma       = 0.5  # Contraction coefficient
+      @sigma       = 0.5  # Shrinkage coefficient
+      @dimensions  = dimensions
+      @start_point = start_point
+    end
+
+    # Raises an error
+    def self.minimize(*args)
+      raise "You should use #new and #iterate"
+    end
+
+    def buildSimplex(startPoint)
+        n = startPoint.length
+        # set first vertex
+        simplex = Array.new(n+1)
+        simplex[0] = PointValuePair.new(startPoint, Float::NAN)
+
+        # set remaining vertices
+        0.upto(n-1) do |i|
+            confI   = startConfiguration[i];
+            vertexI = Array.new(n)
+            0.upto(n-1) do |k|
+                vertexI[k] = startPoint[k] + confI[k]
+            end
+            simplex[i + 1] = PointValuePair.new(vertexI, Float::NAN)
+        end 
+        return simplex
+    end
+
+    def iterate
+      puts @max_iteration
+      k = 1
+      n = 2
+      n = @dimensions
+      simplex = Array.new(n+1)   # array of PointValuePair. init simplex by
+        
+      buildSimplex(@start_point)
+
+      while k<@max_iteration #and check with @epsilon
+        best        = simplex[0]
+        second_best = simplex[n-1]
+        worst       = simplex[n]
+        xWorst      = worst
+
+        centroid = Array.new(n)
+        0.upto(n-1) do |i|
+          centroid[i] = 0.0
+        end
+        
+        # compute the centroid of the best vertices
+        # (dismissing the worst point at index n)
+        0.upto(n-1) do |i|
+          x = simplex[i]
+          0.upto(n-1) do |j|
+            centroid[j] += x[j]
+          end
+        end
+        scaling = 1.0/n
+        0.upto(n-1) do |j|
+          centroid[j] *= scaling;
+        end
+        
+        # compute the reflection point
+        xR = Array.new(n)
+        0.upto(n-1) do |i|
+          xR[i] = 0.0
+        end
+        0.upto(n-1) do |j|
+          xR[j] = centroid[j] + @rho * (centroid[j] - xWorst[j])
+        end
+
+        reflected = PointValuePair.new(xR, f(xR))
+
+
+        
+
+
+        k += 1
+      end
+    end
+  end
+
 end
