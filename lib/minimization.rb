@@ -443,7 +443,9 @@ module Minimization
     end
   end
 
-  class PointValuePair
+## starting
+
+class PointValuePair
     attr_reader :point
     attr_reader :value
     def initialize(point, value)
@@ -489,9 +491,9 @@ module Minimization
       @startConfiguration = Array.new(dimensions)
       0.upto(dimensions-1) do |i|
         @startConfiguration[i] = Array.new(dimensions)
-        #0.upto(dimensions-1) do |j|
-        #  @startConfiguration[i][j] = 0.0
-        #end
+        0.upto(dimensions-1) do |j|
+          @startConfiguration[i][j] = 0.0
+        end
       end
     end
     # Set expected value
@@ -539,34 +541,67 @@ module Minimization
       raise "You should use #new and #iterate"
     end
 
-    def buildSimplex(startPoint)
-        n = startPoint.length
+    def build_Simplex(start_point)
         # set first vertex
-        simplex = Array.new(n+1)
-        simplex[0] = PointValuePair.new(startPoint, Float::NAN)
+        n          = start_point.length
+        simplex    = Array.new(n+1)
+        simplex[0] = PointValuePair.new(start_point, Float::NAN)
 
         # set remaining vertices
         0.upto(n-1) do |i|
-            confI   = startConfiguration[i];
-            vertexI = Array.new(n)
-            0.upto(n-1) do |k|
-                vertexI[k] = startPoint[k] + confI[k]
-            end
-            simplex[i + 1] = PointValuePair.new(vertexI, Float::NAN)
+          conf   = startConfiguration[i]
+          vertex = Array.new(n)
+          0.upto(n-1) do |k|
+            vertex[k] = start_point[k] + conf[k]
+          end
+          simplex[i + 1] = PointValuePair.new(vertex, Float::NAN)
         end 
         return simplex
     end
 
+    def replace_worst_point(point_value_pair)
+      0.upto(simplex.length - 2) do |i|
+        if (point_value_pair_compare(simplex[i], point_value_pair) > 0)
+          tmp              = simplex[i]
+          simplex[i]       = point_value_pair
+          point_value_pair = tmp
+        end
+      end
+      simplex[simplex.length - 1] = point_value_pair
+    end
+
+    def point_value_pair_compare(v1, v2)
+      if v1.value > v2.value
+        return 1
+      elsif v1.value == v2.value
+        return 0
+      else
+        return (-1)
+      end
+    end
+
+    def evaluate_simplex()
+      # evaluate the objective function at all non-evaluated simplex points
+      0.upto(simplex.length -1) do |i|
+        vertex = simplex[i]
+        point  = vertex.point
+        if vertex.value.nan?
+          simplex[i] = PointValuePair.new(point, f(point))
+        end
+      end
+      # sort the simplex from best to worst
+      simplex.sort{ |x1, x2| x1.value <=> x2.value }
+    end
+
     def iterate
-      puts @max_iteration
       k = 1
       n = 2
       n = @dimensions
       simplex = Array.new(n+1)   # array of PointValuePair. init simplex by
         
-      buildSimplex(@start_point)
+      build_Simplex(@start_point)
 
-      while k<@max_iteration #and check with @epsilon
+      while k < @max_iteration   # and check with @epsilon
         best        = simplex[0]
         second_best = simplex[n-1]
         worst       = simplex[n]
@@ -576,7 +611,7 @@ module Minimization
         0.upto(n-1) do |i|
           centroid[i] = 0.0
         end
-        
+
         # compute the centroid of the best vertices
         # (dismissing the worst point at index n)
         0.upto(n-1) do |i|
@@ -589,7 +624,7 @@ module Minimization
         0.upto(n-1) do |j|
           centroid[j] *= scaling;
         end
-        
+
         # compute the reflection point
         xR = Array.new(n)
         0.upto(n-1) do |i|
@@ -598,16 +633,72 @@ module Minimization
         0.upto(n-1) do |j|
           xR[j] = centroid[j] + @rho * (centroid[j] - xWorst[j])
         end
-
+        
         reflected = PointValuePair.new(xR, f(xR))
 
+        if(point_value_pair_compare(best, reflected) <=0 and 
+          point_value_pair_compare(reflected, second_best) < 0)
+          replace_worst_point(reflected, comparator)
 
-        
+        elsif(point_value_pair_compare(reflected, best) < 0)
+          xE = Array.new(n)
+          0.upto(n-1) do |i|
+              xE[j] = centroid[j] + khi * (xR[j] - centroid[j])
+          end
+          expanded = PointValuePair(xE, f(xE))
 
+          if (point_value_pair_compare(expanded, reflected) < 0)
+              # accept the expansion point
+              replace_worst_point(expanded, comparator)
+          else
+              # accept the reflected point
+              replace_worst_point(reflected, comparator)
+          end
 
+        else 
+                    
+          if comparator.compare(reflected, worst) < 0
+            # perform an outside contraction
+            xC = Array.new(n)
+            0.upto(n-1) do |j|
+                xC[j] = centroid[j] + gamma * (xR[j] - centroid[j])
+            end
+            out_contracted = PointValuePair.new(xC, f(xC))
+            if point_value_pair_compare(out_contracted, reflected) <= 0
+                # accept the contraction point
+                replace_worst_point(out_contracted, comparator)
+                return
+            end
+
+          else
+            # perform an inside contraction
+            xC = Array.new(n)
+            0.upto(n-1) do |j|
+                xC[j] = centroid[j] - gamma * (centroid[j] - xWorst[j])
+            end
+            in_contracted = PointValuePair.new(xC, f(xC))
+            if comparator.compare(in_contracted, worst) < 0
+                # accept the contraction point
+                replace_worst_point(in_contracted, comparator)
+                return
+            end
+
+          end
+
+          # perform a shrink
+          smallest = simplex[0].point
+          1.upto(simplex.length -1) do |i|
+              x = simplex[i].point
+              0.upto(n-1) do |j|
+                  x[j] = smallest[j] + sigma * (x[j] - smallest[j])
+              end
+              simplex[i] = PointValuePair.new(x, Float::NAN)
+          end
+          evaluate_simplex(comparator)
+
+        end
         k += 1
       end
     end
   end
-
 end
