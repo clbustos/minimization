@@ -29,17 +29,16 @@ class DirectSearchOptimizer
     end
 
     def f(x)
-        return (x-1)**2
+        return (x[0]-1)**2
         # change this
     end
 
-    def DirectSearchOptimizer() 
+    def initialize()#DirectSearchOptimizer() 
         @maxIterations = 100000
         @maxEvaluations = 100000
     end
 
     def setStartConfiguration(steps)
-        puts "aaaaaaaaaaaaaaaaaaaaaa"
         n = steps.length
         @startConfiguration = Array.new(n) { Array.new(n) }
         0.upto(n-1) do |i|
@@ -128,9 +127,9 @@ class DirectSearchOptimizer
                 end
             end
 
-            System.arraycopy(@simplex, 0, previous, 0, @simplex.length);
+            @simplex = previous[0..(@simplex.length-1)]
+            #System.arraycopy(@simplex, 0, previous, 0, @simplex.length)
             iterateSimplex()
-
         end
     end
 
@@ -171,7 +170,7 @@ class DirectSearchOptimizer
                 @simplex[i] = RealPointValuePair.new(point, evaluate(point))
             end
         end
-        @simplex.sort{ |x1, x2| x1.value <=> x2.value }
+        @simplex.sort{ |x1, x2| x1.getValue <=> x2.getValue }
     end
 
     def replaceWorstPoint()
