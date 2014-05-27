@@ -24,7 +24,13 @@ end
 
 class DirectSearchOptimizer
 
-    def converged
+    def converged(a,b,c)
+        @tmp += 1
+        if(@tmp > 10)
+            false
+        else
+            true
+        end
         # change this
     end
 
@@ -33,9 +39,15 @@ class DirectSearchOptimizer
         # change this
     end
 
-    def initialize()#DirectSearchOptimizer() 
-        @maxIterations = 100000
+    def initialize(iterateSimplexRef)  #DirectSearchOptimizer() 
+@tmp = 0
+        @maxIterations  = 100000
         @maxEvaluations = 100000
+        @iterateSimplexRef = iterateSimplexRef
+    end
+
+    def iterateSimplex()
+        return iterateSimplexRef.call
     end
 
     def setStartConfiguration(steps)
@@ -45,7 +57,7 @@ class DirectSearchOptimizer
             vertexI = @startConfiguration[i]
             0.upto(i) do |j|
                 if (steps[j] == 0.0)
-                    puts "error"
+                    raise "error"
                 end
                 0.upto(j+1) do |k|
                     vertexI[k] = steps[k]
@@ -95,9 +107,9 @@ class DirectSearchOptimizer
    # end
 
     def compare(v1, v2)
-        if v1.value == v2.value
+        if v1.getValue == v2.getValue
             return 0
-        elsif v1.value > v2.value
+        elsif v1.getValue > v2.getValue
             return 1
         else
             return -1
@@ -115,19 +127,19 @@ class DirectSearchOptimizer
         buildSimplex(startPoint)
         evaluateSimplex()
 
-        previous = Array.new(@simplex.length)
+        @previous = Array.new(@simplex.length)
         loop do
             if @iterations > 0
-                converged = true
+                @converged = true
                 0.upto(@simplex.length-1) do |i|
-                    converged &= converged(@iterations, previous[i], @simplex[i])
+                    @converged &= converged(@iterations, @previous[i], @simplex[i])
                 end
-                if (converged)
+                if (@converged)
                     return @simplex[0]
                 end
             end
 
-            @simplex = previous[0..(@simplex.length-1)]
+            @previous = @simplex[0..(@previous.length-1)]      # check again for requirement
             #System.arraycopy(@simplex, 0, previous, 0, @simplex.length)
             iterateSimplex()
         end
@@ -189,7 +201,7 @@ end
 class NelderMead < DirectSearchOptimizer
 
     def initialize()
-        super()
+        super(proc{iterateSimplex})
         @rho   = 1.0;
         @khi   = 2.0;
         @gamma = 0.5;
@@ -206,13 +218,11 @@ class NelderMead < DirectSearchOptimizer
 
     def iterateSimplex()
         incrementIterationsCounter()
-
         n = @simplex.length - 1
-
         best       = @simplex[0]
         secondBest = @simplex[n-1]
         worst      = @simplex[n]
-        xWorst = worst.getPointRef()
+        xWorst     = worst.getPointRef()
 
         centroid = Array.new(n, 0)
 
@@ -290,5 +300,6 @@ class NelderMead < DirectSearchOptimizer
 
 end
 
-x = DirectSearchOptimizer.new
-x.optimize([0])
+x = NelderMead.new
+val = x.optimize([0, 0])
+puts val.getPoint
