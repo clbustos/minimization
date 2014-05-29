@@ -1,3 +1,27 @@
+# = Nelder_Mead.rb -
+# Minimization- Minimization algorithms on pure Ruby
+# Copyright (C) 2010 Claudio Bustos
+#
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License
+# as published by the Free Software Foundation; either version 2
+# of the License, or (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+#
+# This algorith was adopted and ported into Ruby from Apache-commons
+# Math library's NelderMead.java file. Therefore this file is under
+# Apache License Version 2.
+#
+# Nelder Mead Algorithm for Multidimensional minimization
+
 class RealPointValuePair
     def initialize(point, value)
         @point = point.clone
@@ -25,8 +49,8 @@ end
 class DirectSearchOptimizer
 
     def converged(a,b,c)
-        @tmp += 1
-        if(@tmp > 10)
+@tmp += 1
+        if(@tmp < 100)
             false
         else
             true
@@ -35,11 +59,11 @@ class DirectSearchOptimizer
     end
 
     def f(x)
-        return (x[0]-1)**2
+            return (x[0]-2)**2
         # change this
     end
 
-    def initialize(iterateSimplexRef)  #DirectSearchOptimizer() 
+    def initialize(iterateSimplexRef)
 @tmp = 0
         @maxIterations  = 100000
         @maxEvaluations = 100000
@@ -67,7 +91,7 @@ class DirectSearchOptimizer
     end
 
    # def setStartConfiguration(referenceSimplex)
-   #     puts "bbbbbbbbbbbbbbbbbbbbbbb"
+   #      "bbbbbbbbbbbbbbbbbbbbbbb"
    #     n = referenceSimplex.length - 1
    #     if (n < 0)
    #        puts "simplex must contain at least one point"
@@ -110,9 +134,9 @@ class DirectSearchOptimizer
         if v1.getValue == v2.getValue
             return 0
         elsif v1.getValue > v2.getValue
-            return 1
-        else
             return -1
+        else
+            return 1
         end
     end
 
@@ -130,11 +154,11 @@ class DirectSearchOptimizer
         @previous = Array.new(@simplex.length)
         loop do
             if @iterations > 0
-                @converged = true
+                converged = true
                 0.upto(@simplex.length-1) do |i|
-                    @converged &= converged(@iterations, @previous[i], @simplex[i])
+                    converged &= converged(@iterations, @previous[i], @simplex[i])
                 end
-                if (@converged)
+                if (converged)
                     return @simplex[0]
                 end
             end
@@ -143,16 +167,19 @@ class DirectSearchOptimizer
             #System.arraycopy(@simplex, 0, previous, 0, @simplex.length)
             iterateSimplex()
         end
+        #for i in 0..(@simplex.length-1)
+        #    puts "#{@simplex[i].getValue}     #{@simplex[i].getPointRef}"
+        #end
     end
 
     def incrementIterationsCounter()
         @iterations += 1
-        raise "iteration limit reached" if @iterations > @maxIterations
+        #raise "iteration limit reached" if @iterations > @maxIterations
     end
 
     def evaluate(x)
          @evaluations += 1
-        raise "evaluation error!" if (@evaluations > @maxEvaluations)
+        #raise "evaluation error!" if (@evaluations > @maxEvaluations)
         return f(x)
     end
 
@@ -181,11 +208,16 @@ class DirectSearchOptimizer
             if vertex.getValue().nan?
                 @simplex[i] = RealPointValuePair.new(point, evaluate(point))
             end
+puts "evaluate simplex : #{@simplex[i].getValue}     #{@simplex[i].getPointRef}"
         end
-        @simplex.sort{ |x1, x2| x1.getValue <=> x2.getValue }
+        @simplex.sort!{ |x1, x2| x1.getValue <=> x2.getValue }
+        puts "sorted"
+        0.upto(@simplex.length-1) do |i|
+            puts "#{@simplex[i].getPointRef}   #{@simplex[i].getValue}"
+        end
     end
 
-    def replaceWorstPoint()
+    def replaceWorstPoint(pointValuePair)
         n = @simplex.length - 1
         0.upto(n-1) do |i|
             if (compare(@simplex[i], pointValuePair) > 0)
@@ -294,6 +326,7 @@ class NelderMead < DirectSearchOptimizer
                 end
                 @simplex[i] = RealPointValuePair.new(x, Float::NAN)
             end
+            puts "bbbbbbbbbbbbbbbbbbbbbbbbbbBBB"
             evaluateSimplex()
         end
     end
@@ -302,4 +335,4 @@ end
 
 x = NelderMead.new
 val = x.optimize([0, 0])
-puts val.getPoint
+puts "results :  #{val.getPoint}     #{val.getValue}"
