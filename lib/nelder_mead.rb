@@ -28,11 +28,6 @@ class RealPointValuePair
         @value  = value
     end
 
-    #def initialize(point,value,copyArray)
-    #    this.point = copyArray ? point.clone() : point;
-    #    this.value  = value;
-    #end
-
     def getPoint()
         return @point.clone
     end
@@ -48,26 +43,27 @@ end
 
 class DirectSearchOptimizer
 
-    def converged(a,b,c)
-@tmp += 1
-        if(@tmp < 100)
-            false
-        else
-            true
-        end
-        # change this
+    def initialize(iterateSimplexRef)
+        @EPSILON           = 1e-6
+        @SAFEMIN           = 0x1e-1022
+        @tmp               = 0
+        @maxIterations     = 100000
+        @maxEvaluations    = 100000
+        @iterateSimplexRef = iterateSimplexRef
+        @relativeThreshold = 100 * @EPSILON
+        @absoluteThreshold = 100 * @SAFEMIN
+    end
+
+    def converged(previous, current)
+        pre        = previous.getValue()
+        curr       = current.getValue()
+        diff       = (pre - curr).abs
+        size       = [pre.abs, curr.abs].max
+        return (diff <= (size * @relativeThreshold)) || (diff <= @absoluteThreshold)
     end
 
     def f(x)
             return (x[0]-2)**2
-        # change this
-    end
-
-    def initialize(iterateSimplexRef)
-@tmp = 0
-        @maxIterations  = 100000
-        @maxEvaluations = 100000
-        @iterateSimplexRef = iterateSimplexRef
     end
 
     def iterateSimplex()
@@ -89,46 +85,6 @@ class DirectSearchOptimizer
             end
         end
     end
-
-   # def setStartConfiguration(referenceSimplex)
-   #      "bbbbbbbbbbbbbbbbbbbbbbb"
-   #     n = referenceSimplex.length - 1
-   #     if (n < 0)
-   #        puts "simplex must contain at least one point"
-   #        return
-   #     end
-   #     @startConfiguration = Array.new(n) { Array.new(n) }
-   #     ref0 = referenceSimplex[0]
-
-   #     0.upto(n) do |i|
-   #         refI = referenceSimplex[i]
-   #         if (refI.length != n)
-   #             puts "dimension mismatch #{refI.length} != #{n}"
-   #             return
-   #         end
-   #         0.upto(i-1) do |j|
-   #             refJ = referenceSimplex[j]
-   #             allEquals = true
-   #             0.upto(n-1) do |k|
-   #                 if (refI[k] != refJ[k])
-   #                     allEquals = false
-   #                     break
-   #                 end
-   #             end
-   #             if (allEquals)
-   #                 puts "equals vertices #{i} and #{j} in simplex configuration"
-   #                 return
-   #             end
-   #         end
-
-   #         if (i > 0)
-   #             confI = @startConfiguration[i - 1]
-   #             0.upto(n-1) do |k|
-   #                 confI[k] = refI[k] - ref0[k]
-   #             end
-   #         end
-   #     end
-   # end
 
     def compare(v1, v2)
         if v1.getValue == v2.getValue
@@ -156,7 +112,7 @@ class DirectSearchOptimizer
             if @iterations > 0
                 converged = true
                 0.upto(@simplex.length-1) do |i|
-                    converged &= converged(@iterations, @previous[i], @simplex[i])
+                    converged &= converged(@previous[i], @simplex[i])
                 end
                 if (converged)
                     return @simplex[0]
@@ -164,12 +120,8 @@ class DirectSearchOptimizer
             end
 
             @previous = @simplex[0..(@previous.length-1)]      # check again for requirement
-            #System.arraycopy(@simplex, 0, previous, 0, @simplex.length)
             iterateSimplex()
         end
-        #for i in 0..(@simplex.length-1)
-        #    puts "#{@simplex[i].getValue}     #{@simplex[i].getPointRef}"
-        #end
     end
 
     def incrementIterationsCounter()
@@ -208,7 +160,6 @@ class DirectSearchOptimizer
             if vertex.getValue().nan?
                 @simplex[i] = RealPointValuePair.new(point, evaluate(point))
             end
-puts "evaluate simplex : #{@simplex[i].getValue}     #{@simplex[i].getPointRef}"
         end
         @simplex.sort!{ |x1, x2| x1.getValue <=> x2.getValue }
         puts "sorted"
@@ -239,14 +190,6 @@ class NelderMead < DirectSearchOptimizer
         @gamma = 0.5;
         @sigma = 0.5;
     end
-
-    #public NelderMead(final double rho, final double khi,
-    #                  final double gamma, final double sigma) {
-    #    this.rho   = rho;
-    #    this.khi   = khi;
-    #    this.gamma = gamma;
-    #    this.sigma = sigma;
-    #}
 
     def iterateSimplex()
         incrementIterationsCounter()
@@ -326,7 +269,7 @@ class NelderMead < DirectSearchOptimizer
                 end
                 @simplex[i] = RealPointValuePair.new(x, Float::NAN)
             end
-            puts "bbbbbbbbbbbbbbbbbbbbbbbbbbBBB"
+            puts "----------------------------"
             evaluateSimplex()
         end
     end
