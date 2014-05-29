@@ -23,89 +23,81 @@
 # Nelder Mead Algorithm for Multidimensional minimization
 
 class RealPointValuePair
+    attr_reader   :value
+    attr_accessor :value
+    attr_reader   :point
     def initialize(point, value)
         @point = point.clone
         @value  = value
     end
 
-    def getPoint()
+    def get_point()
         return @point.clone
-    end
-
-    def getPointRef()
-        return @point
-    end
-
-    def getValue()
-        return @value
     end
 end
 
 class DirectSearchOptimizer
 
-    def initialize(iterateSimplexRef)
+    def initialize(iterate_simplex_ref)
         @EPSILON           = 1e-6
         @SAFEMIN           = 0x1e-1022
-        @tmp               = 0
-        @maxIterations     = 100000
-        @maxEvaluations    = 100000
-        @iterateSimplexRef = iterateSimplexRef
-        @relativeThreshold = 100 * @EPSILON
-        @absoluteThreshold = 100 * @SAFEMIN
+        @max_iterations     = 1000000
+        @max_evaluations    = 1000000
+        @iterate_simplex_ref = iterate_simplex_ref
+        @relative_threshold = 100 * @EPSILON
+        @absolute_threshold = 100 * @SAFEMIN
     end
 
     def converged(previous, current)
-        pre        = previous.getValue()
-        curr       = current.getValue()
+        pre        = previous.value
+        curr       = current.value
         diff       = (pre - curr).abs
         size       = [pre.abs, curr.abs].max
-        return (diff <= (size * @relativeThreshold)) || (diff <= @absoluteThreshold)
+        return (diff <= (size * @relative_threshold)) || (diff <= @absolute_threshold)
     end
 
     def f(x)
             return (x[0]-2)**2
     end
 
-    def iterateSimplex()
-        return iterateSimplexRef.call
+    def iterate_simplex()
+        return iterate_simplex_ref.call
     end
 
-    def setStartConfiguration(steps)
+    def set_start_configuration(steps)
         n = steps.length
-        @startConfiguration = Array.new(n) { Array.new(n) }
+        @start_configuration = Array.new(n) { Array.new(n) }
         0.upto(n-1) do |i|
-            vertexI = @startConfiguration[i]
+            vertex_i = @start_configuration[i]
             0.upto(i) do |j|
-                if (steps[j] == 0.0)
-                    raise "error"
-                end
+                raise "equals vertices #{j} and #{j+1} in simplex configuration" if steps[j] == 0.0
                 0.upto(j+1) do |k|
-                    vertexI[k] = steps[k]
+                    vertex_i[k] = steps[k]
                 end
             end
         end
     end
 
     def compare(v1, v2)
-        if v1.getValue == v2.getValue
+        if v1.value == v2.value
             return 0
-        elsif v1.getValue > v2.getValue
-            return -1
-        else
+        elsif v1.value > v2.value
             return 1
+        else
+            return -1
         end
     end
 
-    def optimize(startPoint)
-        if @startConfiguration == nil
-            unit = Array.new(startPoint.length) { 1.0 }
-            setStartConfiguration(unit)
+    def optimize(start_point)
+        if @start_configuration == nil
+            unit = Array.new(start_point.length) { 1.0 }
+            set_start_configuration(unit)
         end
 
         @iterations  = 0
         @evaluations = 0
-        buildSimplex(startPoint)
-        evaluateSimplex()
+        build_simplex(start_point)
+        evaluate_simplex()
 
         @previous = Array.new(@simplex.length)
         loop do
@@ -120,89 +112,89 @@ class DirectSearchOptimizer
             end
 
             @previous = @simplex[0..(@previous.length-1)]      # check again for requirement
-            iterateSimplex()
+            iterate_simplex()
         end
     end
 
-    def incrementIterationsCounter()
+    def increment_iterations_counter()
         @iterations += 1
-        #raise "iteration limit reached" if @iterations > @maxIterations
+        raise "iteration limit reached" if @iterations > @max_iterations
     end
 
     def evaluate(x)
          @evaluations += 1
-        #raise "evaluation error!" if (@evaluations > @maxEvaluations)
+        raise "evaluation error!" if (@evaluations > @max_evaluations)
         return f(x)
     end
 
-    def buildSimplex(startPoint)
-        n = startPoint.length
-        raise "dimension mismatch" if n != @startConfiguration.length
+    def build_simplex(start_point)
+        n = start_point.length
+        raise "dimension mismatch" if n != @start_configuration.length
 
         @simplex = Array.new(n+1)
-        @simplex[0] = RealPointValuePair.new(startPoint, Float::NAN)
+        @simplex[0] = RealPointValuePair.new(start_point, Float::NAN)
 
         0.upto(n-1) do |i|
-            confI   = @startConfiguration[i]
-            vertexI = Array.new(n)
+            conf_i   = @start_configuration[i]
+            vertex_i = Array.new(n)
             0.upto(n-1) do |k|
-                vertexI[k] = startPoint[k] + confI[k]
+                vertex_i[k] = start_point[k] + conf_i[k]
             end
-            @simplex[i + 1] = RealPointValuePair.new(vertexI, Float::NAN)
+            @simplex[i + 1] = RealPointValuePair.new(vertex_i, Float::NAN)
         end
 
     end
 
-     def evaluateSimplex()
+     def evaluate_simplex()
         0.upto(@simplex.length-1) do |i|
             vertex = @simplex[i]
-            point = vertex.getPointRef()
-            if vertex.getValue().nan?
+            point = vertex.point
+            if vertex.value.nan?
                 @simplex[i] = RealPointValuePair.new(point, evaluate(point))
             end
         end
-        @simplex.sort!{ |x1, x2| x1.getValue <=> x2.getValue }
+        @simplex.sort!{ |x1, x2| x1.value <=> x2.value }
         puts "sorted"
         0.upto(@simplex.length-1) do |i|
-            puts "#{@simplex[i].getPointRef}   #{@simplex[i].getValue}"
+            puts "#{@simplex[i].point}   #{@simplex[i].value}"
         end
     end
 
-    def replaceWorstPoint(pointValuePair)
+    def replace_worst_point(point_value_pair)
         n = @simplex.length - 1
         0.upto(n-1) do |i|
-            if (compare(@simplex[i], pointValuePair) > 0)
+            if (compare(@simplex[i], point_value_pair) > 0)
                 tmp            = @simplex[i]
-                @simplex[i]     = pointValuePair
-                pointValuePair = tmp
+                @simplex[i]     = point_value_pair
+                point_value_pair = tmp
             end
         end
-        @simplex[n] = pointValuePair
+        @simplex[n] = point_value_pair
     end
 end
 
 class NelderMead < DirectSearchOptimizer
 
     def initialize()
-        super(proc{iterateSimplex})
+        super(proc{iterate_simplex})
         @rho   = 1.0;
         @khi   = 2.0;
         @gamma = 0.5;
         @sigma = 0.5;
     end
 
-    def iterateSimplex()
-        incrementIterationsCounter()
+    def iterate_simplex()
+        increment_iterations_counter()
         n = @simplex.length - 1
         best       = @simplex[0]
         secondBest = @simplex[n-1]
         worst      = @simplex[n]
-        xWorst     = worst.getPointRef()
+        x_worst     = worst.point
 
         centroid = Array.new(n, 0)
 
         0.upto(n-1) do |i|
-            x = @simplex[i].getPointRef()
+            x = @simplex[i].point
             0.upto(n-1) do |j|
                 centroid[j] += x[j]
             end
@@ -212,65 +204,65 @@ class NelderMead < DirectSearchOptimizer
             centroid[j] *= scaling
         end
 
-        xR = Array.new(n)
+        xr = Array.new(n)
         0.upto(n-1) do |j|
-            xR[j] = centroid[j] + @rho * (centroid[j] - xWorst[j])
+            xr[j] = centroid[j] + @rho * (centroid[j] - x_worst[j])
         end
-        reflected = RealPointValuePair.new(xR, evaluate(xR))
+        reflected = RealPointValuePair.new(xr, evaluate(xr))
 
         if ((compare(best, reflected) <= 0) && (compare(reflected, secondBest) < 0))
-            replaceWorstPoint(reflected)
+            replace_worst_point(reflected)
 
         elsif (compare(reflected, best) < 0)
-            xE = Array.new(n)
+            xe = Array.new(n)
             0.upto(n-1) do |j|
-                xE[j] = centroid[j] + @khi * (xR[j] - centroid[j])
+                xe[j] = centroid[j] + @khi * (xr[j] - centroid[j])
             end
-            expanded = RealPointValuePair.new(xE, evaluate(xE))
+            expanded = RealPointValuePair.new(xe, evaluate(xe))
 
             if (compare(expanded, reflected) < 0)
-                replaceWorstPoint(expanded)
+                replace_worst_point(expanded)
             else
-                replaceWorstPoint(reflected)
+                replace_worst_point(reflected)
             end
 
         else
             if (compare(reflected, worst) < 0)
-                xC = Array.new(n)
+                xc = Array.new(n)
                 0.upto(n-1) do |j|
-                    xC[j] = centroid[j] + @gamma * (xR[j] - centroid[j])
+                    xc[j] = centroid[j] + @gamma * (xr[j] - centroid[j])
                 end
-                outContracted = RealPointValuePair.new(xC, evaluate(xC))
+                out_contracted = RealPointValuePair.new(xc, evaluate(xc))
 
-                if (compare(outContracted, reflected) <= 0)
-                    replaceWorstPoint(outContracted)
+                if (compare(out_contracted, reflected) <= 0)
+                    replace_worst_point(out_contracted)
                     return
                 end
 
             else
-                xC = Array.new(n)
+                xc = Array.new(n)
                 0.upto(n-1) do |j|
-                    xC[j] = centroid[j] - @gamma * (centroid[j] - xWorst[j])
+                    xc[j] = centroid[j] - @gamma * (centroid[j] - x_worst[j])
                 end
-                inContracted = RealPointValuePair.new(xC, evaluate(xC))
+                in_contracted = RealPointValuePair.new(xc, evaluate(xc))
 
-                if (compare(inContracted, worst) < 0)
-                    replaceWorstPoint(inContracted)
-                    return
+                if (compare(in_contracted, worst) < 0)
+                    replace_worst_point(in_contracted)
+                    return nil
                 end
 
             end
 
-            xSmallest = @simplex[0].getPointRef()
+            x_smallest = @simplex[0].point
             0.upto(@simplex.length-1) do |i|
-                x = @simplex[i].getPoint()
+                x = @simplex[i].get_point()
                 0.upto(n-1) do |j|
-                    x[j] = xSmallest[j] + @sigma * (x[j] - xSmallest[j])
+                    x[j] = x_smallest[j] + @sigma * (x[j] - x_smallest[j])
                 end
                 @simplex[i] = RealPointValuePair.new(x, Float::NAN)
             end
             puts "----------------------------"
-            evaluateSimplex()
+            evaluate_simplex()
         end
     end
 
@@ -278,4 +270,4 @@ end
 
 x = NelderMead.new
 val = x.optimize([0, 0])
-puts "results :  #{val.getPoint}     #{val.getValue}"
+puts "results :  #{val.get_point}     #{val.value}"
