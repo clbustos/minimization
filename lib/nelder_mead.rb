@@ -38,6 +38,13 @@ end
 
 class DirectSearchOptimizer
 
+    def show_simplex
+        puts "----------------------------"
+        0.upto(@simplex.length-1) do |i|
+            puts "#{@simplex[i].point}   #{@simplex[i].value}"
+        end
+    end
+
     def initialize(iterate_simplex_ref)
         @EPSILON           = 1e-6
         @SAFEMIN           = 0x1e-1022
@@ -57,14 +64,14 @@ class DirectSearchOptimizer
     end
 
     def f(x)
-            return (x[0]-2)**2
+        return @f.call(x)
     end
 
     def iterate_simplex()
         return iterate_simplex_ref.call
     end
 
-    def set_start_configuration(steps)
+    def start_configuration=(steps)
         n = steps.length
         @start_configuration = Array.new(n) { Array.new(n) }
         0.upto(n-1) do |i|
@@ -88,18 +95,20 @@ class DirectSearchOptimizer
         end
     end
 
-    def optimize(start_point)
+    def optimize(f, start_point)
+        @f = f
         if @start_configuration == nil
             unit = Array.new(start_point.length) { 1.0 }
-            set_start_configuration(unit)
+            self.start_configuration = unit
         end
 
         @iterations  = 0
         @evaluations = 0
         build_simplex(start_point)
+        show_simplex
         evaluate_simplex()
+        show_simplex
 
-        @previous = Array.new(@simplex.length)
         loop do
             if @iterations > 0
                 converged = true
@@ -111,8 +120,13 @@ class DirectSearchOptimizer
                 end
             end
 
-            @previous = @simplex[0..(@previous.length-1)]      # check again for requirement
+            @previous = Array.new(@simplex.length-1)
+            0.upto(@simplex.length-1) do |i|
+                point = @simplex[i].point                                # clone require?
+                @previous[i] = RealPointValuePair.new(point, evaluate(point))
+            end
             iterate_simplex()
+            show_simplex
         end
     end
 
@@ -133,7 +147,6 @@ class DirectSearchOptimizer
 
         @simplex = Array.new(n+1)
         @simplex[0] = RealPointValuePair.new(start_point, Float::NAN)
-
         0.upto(n-1) do |i|
             conf_i   = @start_configuration[i]
             vertex_i = Array.new(n)
@@ -154,19 +167,13 @@ class DirectSearchOptimizer
             end
         end
         @simplex.sort!{ |x1, x2| x1.value <=> x2.value }
-        puts "sorted"
-        0.upto(@simplex.length-1) do |i|
-            puts "#{@simplex[i].point}   #{@simplex[i].value}"
-        end
     end
 
     def replace_worst_point(point_value_pair)
         n = @simplex.length - 1
         0.upto(n-1) do |i|
             if (compare(@simplex[i], point_value_pair) > 0)
-                tmp            = @simplex[i]
-                @simplex[i]     = point_value_pair
-                point_value_pair = tmp
+                point_value_pair, @simplex[i] = @simplex[i], point_value_pair
             end
         end
         @simplex[n] = point_value_pair
@@ -248,7 +255,7 @@ class NelderMead < DirectSearchOptimizer
 
                 if (compare(in_contracted, worst) < 0)
                     replace_worst_point(in_contracted)
-                    return nil
+                    return
                 end
 
             end
@@ -261,7 +268,6 @@ class NelderMead < DirectSearchOptimizer
                 end
                 @simplex[i] = RealPointValuePair.new(x, Float::NAN)
             end
-            puts "----------------------------"
             evaluate_simplex()
         end
     end
@@ -269,5 +275,6 @@ class NelderMead < DirectSearchOptimizer
 end
 
 x = NelderMead.new
-val = x.optimize([0, 0])
+f = proc {|x| (x[0] - 11)**2+(x[1]-20)**2}
+val = x.optimize(f,[1, 2])
 puts "results :  #{val.get_point}     #{val.value}"
