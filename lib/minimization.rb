@@ -443,9 +443,7 @@ module Minimization
     end
   end
 
-## starting
-
-class PointValuePair
+  class PointValuePair
     attr_reader :point
     attr_reader :value
     def initialize(point, value)

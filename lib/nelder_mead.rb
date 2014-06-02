@@ -31,12 +31,12 @@ class RealPointValuePair
         @value  = value
     end
 
-    def get_point()
+    def get_point_clone()
         return @point.clone
     end
 end
 
-class DirectSearchOptimizer
+class DirectSearchMinimizer
 
     def show_simplex
         puts "----------------------------"
@@ -45,29 +45,36 @@ class DirectSearchOptimizer
         end
     end
 
-    def initialize(iterate_simplex_ref)
-        @EPSILON           = 1e-6
-        @SAFEMIN           = 0x1e-1022
-        @max_iterations     = 1000000
-        @max_evaluations    = 1000000
+    def initialize(f, start_point, iterate_simplex_ref)
+        @EPSILON             = 1e-6
+        @SAFEMIN             = 0x1e-1022
+        @max_iterations      = 1000000
+        @max_evaluations     = 1000000
         @iterate_simplex_ref = iterate_simplex_ref
-        @relative_threshold = 100 * @EPSILON
-        @absolute_threshold = 100 * @SAFEMIN
-    end
+        @relative_threshold  = 100 * @EPSILON
+        @absolute_threshold  = 100 * @SAFEMIN
 
-    def converged(previous, current)
-        pre        = previous.value
-        curr       = current.value
-        diff       = (pre - curr).abs
-        size       = [pre.abs, curr.abs].max
-        return (diff <= (size * @relative_threshold)) || (diff <= @absolute_threshold)
+        @f = f
+        if @start_configuration == nil
+            unit = Array.new(start_point.length) { 1.0 }
+            self.start_configuration = unit
+        end
+
+        @iterations  = 0
+        @evaluations = 0
+        build_simplex(start_point)
+        show_simplex
+        evaluate_simplex()
+        show_simplex
     end
 
     def f(x)
+         @evaluations += 1
+        raise "evaluation error!" if (@evaluations > @max_evaluations)
         return @f.call(x)
     end
 
-    def iterate_simplex()
+    def iterate_simplex
         return iterate_simplex_ref.call
     end
 
@@ -95,50 +102,38 @@ class DirectSearchOptimizer
         end
     end
 
-    def optimize(f, start_point)
-        @f = f
-        if @start_configuration == nil
-            unit = Array.new(start_point.length) { 1.0 }
-            self.start_configuration = unit
+    def converged
+        def point_converged(previous, current)
+            pre        = previous.value
+            curr       = current.value
+            diff       = (pre - curr).abs
+            size       = [pre.abs, curr.abs].max
+            return (diff <= (size * @relative_threshold)) || (diff <= @absolute_threshold)
         end
-
-        @iterations  = 0
-        @evaluations = 0
-        build_simplex(start_point)
-        show_simplex
-        evaluate_simplex()
-        show_simplex
-
-        loop do
-            if @iterations > 0
-                converged = true
-                0.upto(@simplex.length-1) do |i|
-                    converged &= converged(@previous[i], @simplex[i])
-                end
-                if (converged)
-                    return @simplex[0]
-                end
-            end
-
-            @previous = Array.new(@simplex.length-1)
+        if @iterations > 0
+            converged = true
             0.upto(@simplex.length-1) do |i|
-                point = @simplex[i].point                                # clone require?
-                @previous[i] = RealPointValuePair.new(point, evaluate(point))
+                converged &= point_converged(@previous[i], @simplex[i])
             end
-            iterate_simplex()
-            show_simplex
+            return converged
         end
+        return false
+    end
+
+    def minimize
+        @previous = Array.new(@simplex.length-1)
+        0.upto(@simplex.length-1) do |i|
+            point = @simplex[i].point                                # clone require?
+            @previous[i] = RealPointValuePair.new(point, f(point))
+        end
+        iterate_simplex
+        show_simplex
+        return @simplex[0]
     end
 
     def increment_iterations_counter()
         @iterations += 1
         raise "iteration limit reached" if @iterations > @max_iterations
-    end
-
-    def evaluate(x)
-         @evaluations += 1
-        raise "evaluation error!" if (@evaluations > @max_evaluations)
-        return f(x)
     end
 
     def build_simplex(start_point)
@@ -158,12 +153,12 @@ class DirectSearchOptimizer
 
     end
 
-     def evaluate_simplex()
+    def evaluate_simplex()
         0.upto(@simplex.length-1) do |i|
             vertex = @simplex[i]
             point = vertex.point
             if vertex.value.nan?
-                @simplex[i] = RealPointValuePair.new(point, evaluate(point))
+                @simplex[i] = RealPointValuePair.new(point, f(point))
             end
         end
         @simplex.sort!{ |x1, x2| x1.value <=> x2.value }
@@ -180,17 +175,17 @@ class DirectSearchOptimizer
     end
 end
 
-class NelderMead < DirectSearchOptimizer
+class NelderMead < DirectSearchMinimizer
 
-    def initialize()
-        super(proc{iterate_simplex})
+    def initialize(f, start_point)
         @rho   = 1.0;
         @khi   = 2.0;
         @gamma = 0.5;
         @sigma = 0.5;
+        super(f, start_point, proc{iterate_simplex})
     end
 
-    def iterate_simplex()
+    def iterate_simplex
         increment_iterations_counter()
         n = @simplex.length - 1
         best       = @simplex[0]
@@ -215,7 +210,7 @@ class NelderMead < DirectSearchOptimizer
         0.upto(n-1) do |j|
             xr[j] = centroid[j] + @rho * (centroid[j] - x_worst[j])
         end
-        reflected = RealPointValuePair.new(xr, evaluate(xr))
+        reflected = RealPointValuePair.new(xr, f(xr))
 
         if ((compare(best, reflected) <= 0) && (compare(reflected, secondBest) < 0))
             replace_worst_point(reflected)
@@ -225,7 +220,7 @@ class NelderMead < DirectSearchOptimizer
             0.upto(n-1) do |j|
                 xe[j] = centroid[j] + @khi * (xr[j] - centroid[j])
             end
-            expanded = RealPointValuePair.new(xe, evaluate(xe))
+            expanded = RealPointValuePair.new(xe, f(xe))
 
             if (compare(expanded, reflected) < 0)
                 replace_worst_point(expanded)
@@ -239,7 +234,7 @@ class NelderMead < DirectSearchOptimizer
                 0.upto(n-1) do |j|
                     xc[j] = centroid[j] + @gamma * (xr[j] - centroid[j])
                 end
-                out_contracted = RealPointValuePair.new(xc, evaluate(xc))
+                out_contracted = RealPointValuePair.new(xc, f(xc))
 
                 if (compare(out_contracted, reflected) <= 0)
                     replace_worst_point(out_contracted)
@@ -251,7 +246,7 @@ class NelderMead < DirectSearchOptimizer
                 0.upto(n-1) do |j|
                     xc[j] = centroid[j] - @gamma * (centroid[j] - x_worst[j])
                 end
-                in_contracted = RealPointValuePair.new(xc, evaluate(xc))
+                in_contracted = RealPointValuePair.new(xc, f(xc))
 
                 if (compare(in_contracted, worst) < 0)
                     replace_worst_point(in_contracted)
@@ -262,7 +257,7 @@ class NelderMead < DirectSearchOptimizer
 
             x_smallest = @simplex[0].point
             0.upto(@simplex.length-1) do |i|
-                x = @simplex[i].get_point()
+                x = @simplex[i].get_point_clone()
                 0.upto(n-1) do |j|
                     x[j] = x_smallest[j] + @sigma * (x[j] - x_smallest[j])
                 end
@@ -274,7 +269,9 @@ class NelderMead < DirectSearchOptimizer
 
 end
 
-x = NelderMead.new
 f = proc {|x| (x[0] - 11)**2+(x[1]-20)**2}
-val = x.optimize(f,[1, 2])
-puts "results :  #{val.get_point}     #{val.value}"
+x = NelderMead.new(f,[1, 2])
+until(x.converged)
+    val = x.minimize
+end
+puts "results :  #{val.get_point_clone}     #{val.value}"
