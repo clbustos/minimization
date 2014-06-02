@@ -30,21 +30,14 @@ class RealPointValuePair
         @point = point.clone
         @value  = value
     end
-
     def get_point_clone()
         return @point.clone
     end
 end
 
 class DirectSearchMinimizer
-
-    def show_simplex
-        puts "----------------------------"
-        0.upto(@simplex.length-1) do |i|
-            puts "#{@simplex[i].point}   #{@simplex[i].value}"
-        end
-    end
-
+    attr_reader :x_minimum
+    attr_reader :f_minimum
     def initialize(f, start_point, iterate_simplex_ref)
         @EPSILON             = 1e-6
         @SAFEMIN             = 0x1e-1022
@@ -53,7 +46,8 @@ class DirectSearchMinimizer
         @iterate_simplex_ref = iterate_simplex_ref
         @relative_threshold  = 100 * @EPSILON
         @absolute_threshold  = 100 * @SAFEMIN
-
+        @x_minimum           = nil
+        @f_minimum           = nil
         @f = f
         if @start_configuration == nil
             unit = Array.new(start_point.length) { 1.0 }
@@ -67,31 +61,18 @@ class DirectSearchMinimizer
         evaluate_simplex()
         show_simplex
     end
-
     def f(x)
          @evaluations += 1
         raise "evaluation error!" if (@evaluations > @max_evaluations)
         return @f.call(x)
     end
-
     def iterate_simplex
         return iterate_simplex_ref.call
     end
-
-    def start_configuration=(steps)
-        n = steps.length
-        @start_configuration = Array.new(n) { Array.new(n) }
-        0.upto(n-1) do |i|
-            vertex_i = @start_configuration[i]
-            0.upto(i) do |j|
-                raise "equals vertices #{j} and #{j+1} in simplex configuration" if steps[j] == 0.0
-                0.upto(j+1) do |k|
-                    vertex_i[k] = steps[k]
-                end
-            end
-        end
+        def increment_iterations_counter()
+        @iterations += 1
+        raise "iteration limit reached" if @iterations > @max_iterations
     end
-
     def compare(v1, v2)
         if v1.value == v2.value
             return 0
@@ -101,7 +82,6 @@ class DirectSearchMinimizer
             return -1
         end
     end
-
     def converged
         def point_converged(previous, current)
             pre        = previous.value
@@ -119,27 +99,22 @@ class DirectSearchMinimizer
         end
         return false
     end
-
-    def minimize
-        @previous = Array.new(@simplex.length-1)
-        0.upto(@simplex.length-1) do |i|
-            point = @simplex[i].point                                # clone require?
-            @previous[i] = RealPointValuePair.new(point, f(point))
+    def start_configuration=(steps)
+        n = steps.length
+        @start_configuration = Array.new(n) { Array.new(n) }
+        0.upto(n-1) do |i|
+            vertex_i = @start_configuration[i]
+            0.upto(i) do |j|
+                raise "equals vertices #{j} and #{j+1} in simplex configuration" if steps[j] == 0.0
+                0.upto(j+1) do |k|
+                    vertex_i[k] = steps[k]
+                end
+            end
         end
-        iterate_simplex
-        show_simplex
-        return @simplex[0]
     end
-
-    def increment_iterations_counter()
-        @iterations += 1
-        raise "iteration limit reached" if @iterations > @max_iterations
-    end
-
     def build_simplex(start_point)
         n = start_point.length
         raise "dimension mismatch" if n != @start_configuration.length
-
         @simplex = Array.new(n+1)
         @simplex[0] = RealPointValuePair.new(start_point, Float::NAN)
         0.upto(n-1) do |i|
@@ -150,9 +125,7 @@ class DirectSearchMinimizer
             end
             @simplex[i + 1] = RealPointValuePair.new(vertex_i, Float::NAN)
         end
-
     end
-
     def evaluate_simplex()
         0.upto(@simplex.length-1) do |i|
             vertex = @simplex[i]
@@ -163,7 +136,6 @@ class DirectSearchMinimizer
         end
         @simplex.sort!{ |x1, x2| x1.value <=> x2.value }
     end
-
     def replace_worst_point(point_value_pair)
         n = @simplex.length - 1
         0.upto(n-1) do |i|
@@ -173,10 +145,27 @@ class DirectSearchMinimizer
         end
         @simplex[n] = point_value_pair
     end
+    def iterate
+        @previous = Array.new(@simplex.length-1)
+        0.upto(@simplex.length-1) do |i|
+            point = @simplex[i].point                                # clone require?
+            @previous[i] = RealPointValuePair.new(point, f(point))
+        end
+        iterate_simplex
+        show_simplex
+        @x_minimum = @simplex[0].point
+        @f_minimum = @simplex[0].value
+        #return @simplex[0]
+    end
+    def show_simplex
+        puts "----------------------------"
+        0.upto(@simplex.length-1) do |i|
+            puts "#{@simplex[i].point}   #{@simplex[i].value}"
+        end
+    end
 end
 
 class NelderMead < DirectSearchMinimizer
-
     def initialize(f, start_point)
         @rho   = 1.0;
         @khi   = 2.0;
@@ -184,7 +173,6 @@ class NelderMead < DirectSearchMinimizer
         @sigma = 0.5;
         super(f, start_point, proc{iterate_simplex})
     end
-
     def iterate_simplex
         increment_iterations_counter()
         n = @simplex.length - 1
@@ -192,9 +180,7 @@ class NelderMead < DirectSearchMinimizer
         secondBest = @simplex[n-1]
         worst      = @simplex[n]
         x_worst     = worst.point
-
         centroid = Array.new(n, 0)
-
         0.upto(n-1) do |i|
             x = @simplex[i].point
             0.upto(n-1) do |j|
@@ -205,29 +191,24 @@ class NelderMead < DirectSearchMinimizer
         0.upto(n-1) do |j|
             centroid[j] *= scaling
         end
-
         xr = Array.new(n)
         0.upto(n-1) do |j|
             xr[j] = centroid[j] + @rho * (centroid[j] - x_worst[j])
         end
         reflected = RealPointValuePair.new(xr, f(xr))
-
         if ((compare(best, reflected) <= 0) && (compare(reflected, secondBest) < 0))
             replace_worst_point(reflected)
-
         elsif (compare(reflected, best) < 0)
             xe = Array.new(n)
             0.upto(n-1) do |j|
                 xe[j] = centroid[j] + @khi * (xr[j] - centroid[j])
             end
             expanded = RealPointValuePair.new(xe, f(xe))
-
             if (compare(expanded, reflected) < 0)
                 replace_worst_point(expanded)
             else
                 replace_worst_point(reflected)
             end
-
         else
             if (compare(reflected, worst) < 0)
                 xc = Array.new(n)
@@ -235,12 +216,10 @@ class NelderMead < DirectSearchMinimizer
                     xc[j] = centroid[j] + @gamma * (xr[j] - centroid[j])
                 end
                 out_contracted = RealPointValuePair.new(xc, f(xc))
-
                 if (compare(out_contracted, reflected) <= 0)
                     replace_worst_point(out_contracted)
                     return
                 end
-
             else
                 xc = Array.new(n)
                 0.upto(n-1) do |j|
@@ -252,9 +231,7 @@ class NelderMead < DirectSearchMinimizer
                     replace_worst_point(in_contracted)
                     return
                 end
-
             end
-
             x_smallest = @simplex[0].point
             0.upto(@simplex.length-1) do |i|
                 x = @simplex[i].get_point_clone()
@@ -266,12 +243,11 @@ class NelderMead < DirectSearchMinimizer
             evaluate_simplex()
         end
     end
-
 end
 
 f = proc {|x| (x[0] - 11)**2+(x[1]-20)**2}
-x = NelderMead.new(f,[1, 2])
-until(x.converged)
-    val = x.minimize
+min = NelderMead.new(f,[1, 2])
+until(min.converged)
+    min.iterate
+    puts "results :  #{min.x_minimum}     #{min.f_minimum}"
 end
-puts "results :  #{val.get_point_clone}     #{val.value}"
