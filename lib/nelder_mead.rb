@@ -38,6 +38,7 @@ end
 class DirectSearchMinimizer
     attr_reader :x_minimum
     attr_reader :f_minimum
+    attr_reader :EPSILON
     def initialize(f, start_point, iterate_simplex_ref)
         @EPSILON             = 1e-6
         @SAFEMIN             = 0x1e-1022
@@ -57,9 +58,9 @@ class DirectSearchMinimizer
         @iterations  = 0
         @evaluations = 0
         build_simplex(start_point)
-        show_simplex
+        #show_simplex
         evaluate_simplex()
-        show_simplex
+        #show_simplex
     end
     def f(x)
          @evaluations += 1
@@ -152,7 +153,7 @@ class DirectSearchMinimizer
             @previous[i] = RealPointValuePair.new(point, f(point))
         end
         iterate_simplex
-        show_simplex
+        #show_simplex
         @x_minimum = @simplex[0].point
         @f_minimum = @simplex[0].value
         #return @simplex[0]
@@ -245,9 +246,9 @@ class NelderMead < DirectSearchMinimizer
     end
 end
 
-f = proc {|x| (x[0] - 11)**2+(x[1]-20)**2}
+f = proc {|x| (x[0] - 2)**2}# + (x[1]-20)**2}
 min = NelderMead.new(f,[1, 2])
 until(min.converged)
     min.iterate
-    puts "results :  #{min.x_minimum}     #{min.f_minimum}"
 end
+puts "results :  #{min.x_minimum}     #{min.f_minimum}"
