@@ -200,8 +200,8 @@ module Minimization
 
     # iterate one step
     def iterate
-      # set previous point
-      @previous = Array.new(@simplex.length - 1)
+      # set previous simplex as the current simplex
+      @previous = Array.new(@simplex.length)
       0.upto(@simplex.length - 1) do |i|
         point = @simplex[i].point                                # clone require?
         @previous[i] = RealPointValuePair.new(point, f(point))
@@ -212,13 +212,6 @@ module Minimization
       @x_minimum = @simplex[0].point
       @f_minimum = @simplex[0].value
     end
-
-    #def show_simplex
-    #  puts "----------------------------"
-    #  0.upto(@simplex.length - 1) do |i|
-    #    puts "#{@simplex[i].point}   #{@simplex[i].value}"
-    #  end
-    #end
   end
 
     # = Nelder Mead Minimizer.
@@ -250,7 +243,7 @@ module Minimization
       best       = @simplex[0]
       secondBest = @simplex[n-1]
       worst      = @simplex[n]
-      x_worst     = worst.point
+      x_worst    = worst.point
       centroid = Array.new(n, 0)
       # compute the centroid of the best vertices
       # (dismissing the worst point at index n)
@@ -317,7 +310,7 @@ module Minimization
         # perform a shrink
         x_smallest = @simplex[0].point
         0.upto(@simplex.length-1) do |i|
-          x = @simplex[i].get_point_clone()
+          x = @simplex[i].get_point_clone
           0.upto(n-1) do |j|
             x[j] = x_smallest[j] + @sigma * (x[j] - x_smallest[j])
           end
@@ -329,7 +322,7 @@ module Minimization
   end
 end
 
-f = proc {|x| (x[0] - 2)**2}
+f = proc {|x| (x[0] - 20)**2 + (x[1] - 30)**2}
 min = Minimization::NelderMead.new(f,[1, 2])
 until(min.converged)
   min.iterate
