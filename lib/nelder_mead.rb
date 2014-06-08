@@ -168,6 +168,7 @@ class DirectSearchMinimizer
 
   # Evaluate all the non-evaluated points of the simplex
   def evaluate_simplex
+    # evaluate the objective function at all non-evaluated simplex points
     0.upto(@simplex.length-1) do |i|
       vertex = @simplex[i]
       point = vertex.point
@@ -175,9 +176,14 @@ class DirectSearchMinimizer
         @simplex[i] = RealPointValuePair.new(point, f(point))
       end
     end
+    # sort the simplex from best to worst
     @simplex.sort!{ |x1, x2| x1.value <=> x2.value }
   end
 
+  # Replace the worst point of the simplex by a new point
+  # == Parameters:
+  # * <tt>point_value_pair</tt>: point to insert
+  #
   def replace_worst_point(point_value_pair)
     n = @simplex.length - 1
     0.upto(n-1) do |i|
@@ -188,25 +194,27 @@ class DirectSearchMinimizer
     @simplex[n] = point_value_pair
   end
 
+  # iterate one step
   def iterate
-    @previous = Array.new(@simplex.length-1)
-    0.upto(@simplex.length-1) do |i|
+    # set previous point
+    @previous = Array.new(@simplex.length - 1)
+    0.upto(@simplex.length - 1) do |i|
       point = @simplex[i].point                                # clone require?
       @previous[i] = RealPointValuePair.new(point, f(point))
     end
+    # iterate simplex
     iterate_simplex
-    #show_simplex
+    # set results
     @x_minimum = @simplex[0].point
     @f_minimum = @simplex[0].value
-    #return @simplex[0]
   end
 
-  def show_simplex
-    puts "----------------------------"
-    0.upto(@simplex.length-1) do |i|
-      puts "#{@simplex[i].point}   #{@simplex[i].value}"
-    end
-  end
+  #def show_simplex
+  #  puts "----------------------------"
+  #  0.upto(@simplex.length - 1) do |i|
+  #    puts "#{@simplex[i].point}   #{@simplex[i].value}"
+  #  end
+  #end
 end
 
 class NelderMead < DirectSearchMinimizer
