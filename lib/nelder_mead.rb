@@ -44,21 +44,21 @@ module Minimization
   end
 
   class DirectSearchMinimizer
-    EPSILON         = 1e-6
-    MAX_ITERATIONS  = 1000000
-    MAX_EVALUATIONS = 1000000
-    SAFE_MIN        = 0x1e-1022
+    EPSILON_DEFAULT         = 1e-6
+    MAX_ITERATIONS_DEFAULT  = 1000000
+    MAX_EVALUATIONS_DEFAULT = 1000000
+    SAFE_MIN_DEFAULT        = 0x1e-1022
     attr_reader :x_minimum
     attr_reader :f_minimum
     attr_reader :epsilon
 
     def initialize(f, start_point, iterate_simplex_ref)
-      @epsilon             = EPSILON
-      @safemin             = SAFE_MIN
+      @epsilon             = EPSILON_DEFAULT
+      @safemin             = SAFE_MIN_DEFAULT
       # Default number of maximum iterations
-      @max_iterations      = MAX_ITERATIONS
+      @max_iterations      = MAX_ITERATIONS_DEFAULT
       # Default number of maximum iterations
-      @max_evaluations     = MAX_EVALUATIONS
+      @max_evaluations     = MAX_EVALUATIONS_DEFAULT
       # proc which iterates the simplex
       @iterate_simplex_ref = iterate_simplex_ref
       @relative_threshold  = 100 * @epsilon
