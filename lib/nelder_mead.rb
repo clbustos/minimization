@@ -21,27 +21,10 @@
 # Apache License Version 2.
 #
 # Nelder Mead Algorithm for Multidimensional minimization
+
+require "./point_value_pair.rb"
+
 module Minimization
-  # class which holds the point,value pair
-  class RealPointValuePair
-    attr_reader   :value
-    attr_accessor :value
-    attr_reader   :point
-
-    # == Parameters:
-    # * <tt>point</tt>: Coordinates of the point
-    # * <tt>value</tt>: Function value at the point
-    #
-    def initialize(point, value)
-      @point = point.clone
-      @value  = value
-    end
-
-    # returns a copy of the point
-    def get_point_clone
-      return @point.clone
-    end
-  end
 
   class DirectSearchMinimizer
     EPSILON_DEFAULT         = 1e-6
@@ -96,7 +79,7 @@ module Minimization
       raise "iteration limit reached" if @iterations > @max_iterations
     end
 
-    # compares 2 RealPointValuePair points
+    # compares 2 PointValuePair points
     def compare(v1, v2)
       if v1.value == v2.value
         return 0
@@ -157,7 +140,7 @@ module Minimization
       raise "dimension mismatch" if n != @start_configuration.length
       # set first vertex
       @simplex = Array.new(n+1)
-      @simplex[0] = RealPointValuePair.new(start_point, Float::NAN)
+      @simplex[0] = PointValuePair.new(start_point, Float::NAN)
 
       # set remaining vertices
       0.upto(n-1) do |i|
@@ -166,7 +149,7 @@ module Minimization
         0.upto(n-1) do |k|
           vertex_i[k] = start_point[k] + conf_i[k]
         end
-        @simplex[i + 1] = RealPointValuePair.new(vertex_i, Float::NAN)
+        @simplex[i + 1] = PointValuePair.new(vertex_i, Float::NAN)
       end
     end
 
@@ -177,7 +160,7 @@ module Minimization
         vertex = @simplex[i]
         point = vertex.point
         if vertex.value.nan?
-          @simplex[i] = RealPointValuePair.new(point, f(point))
+          @simplex[i] = PointValuePair.new(point, f(point))
         end
       end
       # sort the simplex from best to worst
@@ -204,7 +187,7 @@ module Minimization
       @previous = Array.new(@simplex.length)
       0.upto(@simplex.length - 1) do |i|
         point = @simplex[i].point                                # clone require?
-        @previous[i] = RealPointValuePair.new(point, f(point))
+        @previous[i] = PointValuePair.new(point, f(point))
       end
       # iterate simplex
       iterate_simplex
@@ -262,7 +245,7 @@ module Minimization
       0.upto(n-1) do |j|
         xr[j] = centroid[j] + @rho * (centroid[j] - x_worst[j])
       end
-      reflected = RealPointValuePair.new(xr, f(xr))
+      reflected = PointValuePair.new(xr, f(xr))
       if ((compare(best, reflected) <= 0) && (compare(reflected, secondBest) < 0))
         # accept the reflected point
         replace_worst_point(reflected)
@@ -272,7 +255,7 @@ module Minimization
         0.upto(n-1) do |j|
           xe[j] = centroid[j] + @khi * (xr[j] - centroid[j])
         end
-        expanded = RealPointValuePair.new(xe, f(xe))
+        expanded = PointValuePair.new(xe, f(xe))
         if (compare(expanded, reflected) < 0)
           # accept the expansion point
           replace_worst_point(expanded)
@@ -287,7 +270,7 @@ module Minimization
           0.upto(n-1) do |j|
             xc[j] = centroid[j] + @gamma * (xr[j] - centroid[j])
           end
-          out_contracted = RealPointValuePair.new(xc, f(xc))
+          out_contracted = PointValuePair.new(xc, f(xc))
           if (compare(out_contracted, reflected) <= 0)
             # accept the contraction point
             replace_worst_point(out_contracted)
@@ -299,7 +282,7 @@ module Minimization
           0.upto(n-1) do |j|
             xc[j] = centroid[j] - @gamma * (centroid[j] - x_worst[j])
           end
-          in_contracted = RealPointValuePair.new(xc, f(xc))
+          in_contracted = PointValuePair.new(xc, f(xc))
 
           if (compare(in_contracted, worst) < 0)
             # accept the contraction point
@@ -314,7 +297,7 @@ module Minimization
           0.upto(n-1) do |j|
             x[j] = x_smallest[j] + @sigma * (x[j] - x_smallest[j])
           end
-          @simplex[i] = RealPointValuePair.new(x, Float::NAN)
+          @simplex[i] = PointValuePair.new(x, Float::NAN)
         end
         evaluate_simplex
       end
