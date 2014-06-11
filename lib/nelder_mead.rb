@@ -293,7 +293,7 @@ module Minimization
         # perform a shrink
         x_smallest = @simplex[0].point
         0.upto(@simplex.length-1) do |i|
-          x = @simplex[i].get_point_clone
+          x = @simplex[i].point_clone
           0.upto(n-1) do |j|
             x[j] = x_smallest[j] + @sigma * (x[j] - x_smallest[j])
           end
