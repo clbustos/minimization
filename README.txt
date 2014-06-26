@@ -38,4 +38,4 @@ http://ruby-statsample.rubyforge.org/minimization/
 
 == LICENSE:
 
-GPL-2 (See LICENSE.txt)
+BSD 2-clause (See LICENSE.txt)
