@@ -204,7 +204,7 @@ module Minimization
     # == Usage.
     #  require 'minimization'
     #  min=Minimization::NelderMead.new(proc {|x| (x[0] - 2)**2}, [1, 2]}
-    #  min.iterate
+    #  min.minimize
     #  min.x_minimum
     #  min.f_minimum
     #
