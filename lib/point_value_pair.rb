@@ -10,12 +10,12 @@ module Minimization
     # * <tt>value</tt>: Function value at the point
     #
     def initialize(point, value)
-      @point = point
+      @point = point.clone
       @value  = value
     end
 
     # returns a copy of the point
-    def point_clone
+    def get_point_clone
       return @point.clone
     end
   end

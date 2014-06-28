@@ -22,15 +22,17 @@
 #
 # Nelder Mead Algorithm for Multidimensional minimization
 
-require "./point_value_pair.rb"
+require "#{File.dirname(__FILE__)}/point_value_pair.rb"
 
 module Minimization
 
   class DirectSearchMinimizer
+
     EPSILON_DEFAULT         = 1e-6
     MAX_ITERATIONS_DEFAULT  = 1000000
     MAX_EVALUATIONS_DEFAULT = 1000000
     SAFE_MIN_DEFAULT        = 0x1e-1022
+
     attr_reader :x_minimum
     attr_reader :f_minimum
     attr_reader :epsilon
@@ -119,12 +121,12 @@ module Minimization
     # to the first one are stored
     def start_configuration=(steps)
       n = steps.length
-      @start_configuration = Array.new(n) { Array.new(n) }
-      0.upto(n-1) do |i|
+      @start_configuration = Array.new(n) { Array.new(n, 0) }
+      0.upto(n - 1) do |i|
         vertex_i = @start_configuration[i]
         0.upto(i) do |j|
           raise "equals vertices #{j} and #{j+1} in simplex configuration" if steps[j] == 0.0
-          0.upto(j+1) do |k|
+          0.upto(j) do |k|
             vertex_i[k] = steps[k]
           end
         end
@@ -143,10 +145,10 @@ module Minimization
       @simplex[0] = PointValuePair.new(start_point, Float::NAN)
 
       # set remaining vertices
-      0.upto(n-1) do |i|
+      0.upto(n - 1) do |i|
         conf_i   = @start_configuration[i]
         vertex_i = Array.new(n)
-        0.upto(n-1) do |k|
+        0.upto(n - 1) do |k|
           vertex_i[k] = start_point[k] + conf_i[k]
         end
         @simplex[i + 1] = PointValuePair.new(vertex_i, Float::NAN)
@@ -173,7 +175,7 @@ module Minimization
     #
     def replace_worst_point(point_value_pair)
       n = @simplex.length - 1
-      0.upto(n-1) do |i|
+      0.upto(n - 1) do |i|
         if (compare(@simplex[i], point_value_pair) > 0)
           point_value_pair, @simplex[i] = @simplex[i], point_value_pair
         end
@@ -224,25 +226,25 @@ module Minimization
       n = @simplex.length - 1
       # the simplex has n+1 point if dimension is n
       best       = @simplex[0]
-      secondBest = @simplex[n-1]
+      secondBest = @simplex[n - 1]
       worst      = @simplex[n]
       x_worst    = worst.point
       centroid = Array.new(n, 0)
       # compute the centroid of the best vertices
       # (dismissing the worst point at index n)
-      0.upto(n-1) do |i|
+      0.upto(n - 1) do |i|
         x = @simplex[i].point
-        0.upto(n-1) do |j|
+        0.upto(n - 1) do |j|
           centroid[j] += x[j]
         end
       end
       scaling = 1.0 / n
-      0.upto(n-1) do |j|
+      0.upto(n - 1) do |j|
         centroid[j] *= scaling
       end
       xr = Array.new(n)
       # compute the reflection point
-      0.upto(n-1) do |j|
+      0.upto(n - 1) do |j|
         xr[j] = centroid[j] + @rho * (centroid[j] - x_worst[j])
       end
       reflected = PointValuePair.new(xr, f(xr))
@@ -252,7 +254,7 @@ module Minimization
       elsif (compare(reflected, best) < 0)
         xe = Array.new(n)
         # compute the expansion point
-        0.upto(n-1) do |j|
+        0.upto(n - 1) do |j|
           xe[j] = centroid[j] + @khi * (xr[j] - centroid[j])
         end
         expanded = PointValuePair.new(xe, f(xe))
@@ -267,7 +269,7 @@ module Minimization
         if (compare(reflected, worst) < 0)
           xc = Array.new(n)
           # perform an outside contraction
-          0.upto(n-1) do |j|
+          0.upto(n - 1) do |j|
             xc[j] = centroid[j] + @gamma * (xr[j] - centroid[j])
           end
           out_contracted = PointValuePair.new(xc, f(xc))
@@ -279,7 +281,7 @@ module Minimization
         else
           xc = Array.new(n)
           # perform an inside contraction
-          0.upto(n-1) do |j|
+          0.upto(n - 1) do |j|
             xc[j] = centroid[j] - @gamma * (centroid[j] - x_worst[j])
           end
           in_contracted = PointValuePair.new(xc, f(xc))
@@ -293,8 +295,8 @@ module Minimization
         # perform a shrink
         x_smallest = @simplex[0].point
         0.upto(@simplex.length-1) do |i|
-          x = @simplex[i].point_clone
-          0.upto(n-1) do |j|
+          x = @simplex[i].get_point_clone
+          0.upto(n - 1) do |j|
             x[j] = x_smallest[j] + @sigma * (x[j] - x_smallest[j])
           end
           @simplex[i] = PointValuePair.new(x, Float::NAN)
@@ -305,9 +307,10 @@ module Minimization
   end
 end
 
-f = proc {|x| (x[0] - 20)**2 + (x[1] - 30)**2}
-min = Minimization::NelderMead.new(f,[1, 2])
-until(min.converged)
-  min.iterate
-end
-puts "results :  #{min.x_minimum}     #{min.f_minimum}"
+#f = proc {|x| (x[0] - 20)**2 + (x[1] - 33)**2}
+#min = Minimization::NelderMead.new(f,[1, 2])
+#until(min.converged)
+#  min.iterate
+#end
+#puts "results :  #{min.x_minimum}     #{min.f_minimum}"
+
