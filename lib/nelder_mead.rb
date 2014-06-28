@@ -93,28 +93,28 @@ module Minimization
     end
 
     # checks whether the function is converging
-    def converged
+    def converging
       # check the convergence of a point of the simplex by it's current 
       # and previous values
-      def point_converged(previous, current)
+      def point_convergence_check(previous, current)
         pre        = previous.value
         curr       = current.value
         diff       = (pre - curr).abs
         size       = [pre.abs, curr.abs].max
-        return (diff <= (size * @relative_threshold)) || (diff <= @absolute_threshold)
+        return ((diff <= (size * @relative_threshold)) || (diff <= @absolute_threshold))
       end
 
       # checks whether all the points of simplex are converging
       if @iterations > 0
-        converged = true
+        convergence = true
         0.upto(@simplex.length-1) do |i|
-          converged &= point_converged(@previous[i], @simplex[i])
+          convergence &= point_convergence_check(@previous[i], @simplex[i])
         end
-        return converged
+        return !convergence
       end
 
       # if no iterations were done, convergence undefined
-      return false
+      return true
     end
 
     # only the relative position of the n vertices with respect
@@ -184,7 +184,7 @@ module Minimization
     end
 
     # iterate one step
-    def iterate
+    def minimize
       # set previous simplex as the current simplex
       @previous = Array.new(@simplex.length)
       0.upto(@simplex.length - 1) do |i|
@@ -306,11 +306,3 @@ module Minimization
     end
   end
 end
-
-#f = proc {|x| (x[0] - 20)**2 + (x[1] - 33)**2}
-#min = Minimization::NelderMead.new(f,[1, 2])
-#until(min.converged)
-#  min.iterate
-#end
-#puts "results :  #{min.x_minimum}     #{min.f_minimum}"
-
