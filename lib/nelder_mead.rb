@@ -93,24 +93,25 @@ module Minimization
     end
 
     # checks whether the function is converging
-    def converging
+    def converging?
       # check the convergence of a point of the simplex by it's current 
       # and previous values
-      def point_convergence_check(previous, current)
+      def point_converged?(previous, current)
         pre        = previous.value
         curr       = current.value
         diff       = (pre - curr).abs
         size       = [pre.abs, curr.abs].max
-        return ((diff <= (size * @relative_threshold)) || (diff <= @absolute_threshold))
+        return !((diff <= (size * @relative_threshold)) || (diff <= @absolute_threshold))
       end
 
       # checks whether all the points of simplex are converging
       if @iterations > 0
-        convergence = true
+        # opposite of converging
+        divergin = true
         0.upto(@simplex.length-1) do |i|
-          convergence &= point_convergence_check(@previous[i], @simplex[i])
+          divergin &= !point_converged?(@previous[i], @simplex[i])
         end
-        return !convergence
+        return !divergin
       end
 
       # if no iterations were done, convergence undefined
@@ -306,3 +307,10 @@ module Minimization
     end
   end
 end
+
+min = Minimization::NelderMead.new(proc{|x| (x[0] + x[1])**2 + 5}, [1, 5])
+while min.converging?
+  min.minimize
+end
+
+puts "#{min.x_minimum}     #{min.f_minimum}"
