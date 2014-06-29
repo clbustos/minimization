@@ -32,7 +32,6 @@ module Minimization
     attr_accessor :max_brent_iterations
     attr_accessor :x_minimum
     attr_accessor :f_minimum
-    attr_reader   :converging
 
     # default maximum Powell's iteration value
     Max_Iterations_Default      = 100
@@ -293,11 +292,3 @@ module Minimization
 
   end
 end
-
-#f = proc{ |x| (x[0] - 1)**2 + (2*x[1] - 5)**2 + (x[2]-3.3)**2}
-#x = Minimization::PowellMinimizer.new(f, [1, 2, 3], [0, 0, 0], [5, 5, 5])
-#
-#while(x.converging?)
-#  x.minimize
-#  puts "#{x.x_minimum}     #{x.f_minimum}"
-#end
