@@ -8,7 +8,6 @@ module Minimization
 
     attr_reader :x_minimum
     attr_reader :f_minimum
-    attr_reader :converging
 
     attr_accessor :initial_step
 
@@ -49,6 +48,11 @@ module Minimization
           @delta += @r[i] * @search_direction[i]
       end
       @current = nil
+    end
+
+    # return the convergence of the search
+    def converging?
+      return @converging
     end
 
     def f(x)

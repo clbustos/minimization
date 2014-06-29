@@ -21,7 +21,7 @@ describe Minimization::NonLinearConjugateGradientMinimizer do
     f  = proc{ |x| (x[0] - @p[0])**2 + (x[1] - @p[1])**2 + (x[2] - @p[2])**2 }
     fd = proc{ |x| [ 2 * (x[0] - @p[0]) , 2 * (x[1] - @p[1]) , 2 * (x[2] - @p[2]) ] }
     @min1 = Minimization::NonLinearConjugateGradientMinimizer.new(f, fd, @start_point, :fletcher_reeves)
-    while(@min1.converging)
+    while(@min1.converging?)
       @min1.minimize
     end
 
@@ -35,7 +35,7 @@ describe Minimization::NonLinearConjugateGradientMinimizer do
             [r0, r1, r2]
           }
     @min2 = Minimization::NonLinearConjugateGradientMinimizer.new(f2, fd2, @start_point, :fletcher_reeves)
-    while(@min2.converging)
+    while(@min2.converging?)
       @min2.minimize
     end
 
@@ -44,7 +44,7 @@ describe Minimization::NonLinearConjugateGradientMinimizer do
     fd3 = proc{ |x| [ (x[0] - @p[0]) * 2 ] }
     starting_point_3 = [rand(@limit)]
     @min3 = Minimization::NonLinearConjugateGradientMinimizer.new(f3, fd3, starting_point_3, :fletcher_reeves)
-    while(@min3.converging)
+    while(@min3.converging?)
       @min3.minimize
     end
 
