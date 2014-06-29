@@ -64,6 +64,11 @@ module Minimization
       check_parameters
     end
 
+    # return the convergence of the search
+    def converging?
+      return @converging
+    end
+
     # set minimization function
     def f(x)
       # check whether maximum iterations limit reached
@@ -149,7 +154,7 @@ module Minimization
   #  require 'minimization'
   #  f = proc{ |x| (x[0] - 1)**2 + (2*x[1] - 5)**2 + (x[2]-3.3)**2}
   #  min = Minimization::PowellMinimizer.new(f, [1, 2, 3], [0, 0, 0], [5, 5, 5])
-  #  while(min.converging)
+  #  while(min.converging?)
   #    min.minimize
   #  end
   #  min.f_minimum
@@ -292,7 +297,7 @@ end
 #f = proc{ |x| (x[0] - 1)**2 + (2*x[1] - 5)**2 + (x[2]-3.3)**2}
 #x = Minimization::PowellMinimizer.new(f, [1, 2, 3], [0, 0, 0], [5, 5, 5])
 #
-#while(x.converging)
+#while(x.converging?)
 #  x.minimize
 #  puts "#{x.x_minimum}     #{x.f_minimum}"
 #end
