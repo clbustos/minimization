@@ -8,11 +8,14 @@ module Minimization
 
     attr_reader :x_minimum
     attr_reader :f_minimum
+    attr_reader :converging
 
     attr_accessor :initial_step
 
     MAX_EVALUATIONS_DEFAULT = 100000
     MAX_ITERATIONS_DEFAULT  = 100000
+
+    alias :converging? :converging
 
     def initialize(f, fd, start_point, beta_formula)
       @epsilon     = 10e-5
@@ -48,11 +51,6 @@ module Minimization
           @delta += @r[i] * @search_direction[i]
       end
       @current = nil
-    end
-
-    # return the convergence of the search
-    def converging?
-      return @converging
     end
 
     def f(x)
