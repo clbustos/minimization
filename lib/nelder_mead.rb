@@ -31,7 +31,6 @@ module Minimization
     EPSILON_DEFAULT         = 1e-6
     MAX_ITERATIONS_DEFAULT  = 1000000
     MAX_EVALUATIONS_DEFAULT = 1000000
-    SAFE_MIN_DEFAULT        = 0x1e-1022
 
     attr_reader :x_minimum
     attr_reader :f_minimum
@@ -39,7 +38,6 @@ module Minimization
 
     def initialize(f, start_point, iterate_simplex_ref)
       @epsilon             = EPSILON_DEFAULT
-      @safemin             = SAFE_MIN_DEFAULT
       # Default number of maximum iterations
       @max_iterations      = MAX_ITERATIONS_DEFAULT
       # Default number of maximum iterations
@@ -47,7 +45,7 @@ module Minimization
       # proc which iterates the simplex
       @iterate_simplex_ref = iterate_simplex_ref
       @relative_threshold  = 100 * @epsilon
-      @absolute_threshold  = 100 * @safemin
+      @absolute_threshold  = @epsilon
       @x_minimum           = nil
       @f_minimum           = nil
       @f = f
@@ -94,24 +92,23 @@ module Minimization
 
     # checks whether the function is converging
     def converging?
-      # check the convergence of a point of the simplex by it's current 
-      # and previous values
+      # check the convergence in a given direction comparing the previous and current values
       def point_converged?(previous, current)
         pre        = previous.value
         curr       = current.value
         diff       = (pre - curr).abs
         size       = [pre.abs, curr.abs].max
-        return !((diff <= (size * @relative_threshold)) || (diff <= @absolute_threshold))
+        return !((diff <= (size * @relative_threshold)) and (diff <= @absolute_threshold))
       end
 
-      # checks whether all the points of simplex are converging
+      # returns true if converging is possible atleast in one direction
       if @iterations > 0
-        # opposite of converging
-        divergin = true
-        0.upto(@simplex.length-1) do |i|
-          divergin &= !point_converged?(@previous[i], @simplex[i])
+        # given direction is converged
+        converged = true
+        0.upto(@simplex.length - 1) do |i|
+          converged &= !point_converged?(@previous[i], @simplex[i])
         end
-        return !divergin
+        return !converged
       end
 
       # if no iterations were done, convergence undefined
@@ -159,9 +156,9 @@ module Minimization
     # Evaluate all the non-evaluated points of the simplex
     def evaluate_simplex
       # evaluate the objective function at all non-evaluated simplex points
-      0.upto(@simplex.length-1) do |i|
+      0.upto(@simplex.length - 1) do |i|
         vertex = @simplex[i]
-        point = vertex.point
+        point  = vertex.point
         if vertex.value.nan?
           @simplex[i] = PointValuePair.new(point, f(point))
         end
@@ -295,7 +292,7 @@ module Minimization
         end
         # perform a shrink
         x_smallest = @simplex[0].point
-        0.upto(@simplex.length-1) do |i|
+        0.upto(@simplex.length - 1) do |i|
           x = @simplex[i].get_point_clone
           0.upto(n - 1) do |j|
             x[j] = x_smallest[j] + @sigma * (x[j] - x_smallest[j])
@@ -307,10 +304,3 @@ module Minimization
     end
   end
 end
-
-min = Minimization::NelderMead.new(proc{|x| (x[0] + x[1])**2 + 5}, [1, 5])
-while min.converging?
-  min.minimize
-end
-
-puts "#{min.x_minimum}     #{min.f_minimum}"

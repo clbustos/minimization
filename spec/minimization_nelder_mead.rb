@@ -4,7 +4,7 @@ describe Minimization::NelderMead do
   before :all do
     @n           = 3
     @limit       = 100
-    @epsilon     = 1e-3
+    @epsilon     = 1e-6
     @p           = Array.new(@n)
     @start_point = Array.new(@n)
 
