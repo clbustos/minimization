@@ -14,11 +14,12 @@ module Minimization
 
     MAX_EVALUATIONS_DEFAULT = 100000
     MAX_ITERATIONS_DEFAULT  = 100000
+    EPSILON_DEFAULT         = 1e-6
 
     alias :converging? :converging
 
     def initialize(f, fd, start_point, beta_formula)
-      @epsilon     = 10e-5
+      @epsilon     = EPSILON_DEFAULT
       @safe_min    = 4.503599e15
       @f           = f
       @fd          = fd
@@ -64,13 +65,13 @@ module Minimization
     end
 
     def find_upper_bound(a, h, search_direction)
-      ya   = line_search_func(a, search_direction)
+      ya   = line_search_func(a, search_direction).to_f
       yb   = ya
       step = h
       # check step value for float max value exceeds
       while step < Float::MAX
         b  = a + step
-        yb = line_search_func(b, search_direction)
+        yb = line_search_func(b, search_direction).to_f
         if (ya * yb <= 0)
           return b
         end
@@ -153,13 +154,13 @@ module Minimization
       end
 
       if (@update_formula == :fletcher_reeves)
-        beta = @delta / delta_old
+        beta = @delta.to_f / delta_old
       elsif(@update_formula == :polak_ribiere)
         deltaMid = 0
         0.upto(@r.length - 1) do |i|
           deltaMid += @r[i] * @steepest_descent[i]
         end
-        beta = (@delta - deltaMid) / delta_old
+        beta = (@delta - deltaMid).to_f / delta_old
       else
         raise "Unknown beta formula type"
       end
