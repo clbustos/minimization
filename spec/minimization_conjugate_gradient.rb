@@ -2,7 +2,7 @@ require "./../lib/conjugate_gradient_minimizer.rb"
 
 describe Minimization::NonLinearConjugateGradientMinimizer do
 
-  before do
+  before :all do
     @n           = 3
     @limit       = 100
     @epsilon     = 1e-5
@@ -52,24 +52,25 @@ describe Minimization::NonLinearConjugateGradientMinimizer do
 
   it "#x_minimum be close to expected in example 1" do 
     0.upto(@n - 1) do |i|
-      @min1.x_minimum[i].should be_within(@epsilon).of(@p[i])
+      expect(@min1.x_minimum[i]).to be_within(@epsilon).of(@p[i])
     end
   end
 
   it "#f_minimum be close to expected in example 1" do 
-    @min1.f_minimum.should be_within(@epsilon).of(0)
+    expect(@min1.f_minimum).to be_within(@epsilon).of(0)
   end
 
   it "#f_minimum be close to expected in example 2" do 
-    @min2.f_minimum.should be_within(@epsilon).of(@k)
+    expect(@min2.f_minimum).to be_within(@epsilon).of(@k)
   end
 
   it "#x_minimum be close to expected in example 3" do 
-    @min3.x_minimum[0].should be_within(@epsilon).of(@p[0])
+    expect(@min3.x_minimum[0]).to be_within(@epsilon).of(@p[0])
   end
 
   it "#f_minimum be close to expected in example 3" do 
-    @min3.f_minimum.should be_within(@epsilon).of(@k)
+    expect(@min3.f_minimum).to be_within(@epsilon).of(@k)
   end
 
 end
+
