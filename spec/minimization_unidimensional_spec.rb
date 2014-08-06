@@ -14,10 +14,10 @@ describe Minimization::Unidimensional, "subclass" do
       @min.iterate
     end
     it "#x_minimum be close to expected" do 
-      @min.x_minimum.should be_close(@p1,@min.epsilon)
+      @min.x_minimum.should be_within(@min.epsilon).of(@p1)
     end
     it "#f_minimum ( f(x)) be close to expected" do 
-      @min.f_minimum.should be_close(@p2,@min.epsilon)
+      @min.f_minimum.should be_within(@min.epsilon).of(@p2)
     end
     context "#log" do
       subject {@min.log}
@@ -32,10 +32,11 @@ describe Minimization::Unidimensional, "subclass" do
       @min = Minimization::GoldenSection.minimize(-1000,1000, &@func)
     end
     it "#x_minimum be close to expected" do 
-      @min.x_minimum.should be_close(@p1,@min.epsilon)
+      @min.x_minimum.should be_within(@min.epsilon).of(@p1)
     end
     it "#f_minimum ( f(x)) be close to expected" do 
-      @min.f_minimum.should be_close(@p2,@min.epsilon)
+      @min.f_minimum.should be_within(@min.epsilon).of(@p2)
+
     end
     context "#log" do
       subject {@min.log}
@@ -48,10 +49,11 @@ describe Minimization::Unidimensional, "subclass" do
       @min = Minimization::Brent.minimize(-1000,1000, &@func)
     end
     it "should x be correct" do 
-      @min.x_minimum.should be_close(@p1,@min.epsilon)
+      @min.x_minimum.should be_within(@min.epsilon).of(@p1)
     end
     it "should f(x) be correct" do 
-      @min.f_minimum.should be_close(@p2,@min.epsilon)
+
+      @min.f_minimum.should be_within(@min.epsilon).of(@p2)
     end
     context "#log" do
       subject {@min.log}
