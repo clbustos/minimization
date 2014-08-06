@@ -36,7 +36,6 @@ describe Minimization::Unidimensional, "subclass" do
     end
     it "#f_minimum ( f(x)) be close to expected" do 
       @min.f_minimum.should be_within(@min.epsilon).of(@p2)
-
     end
     context "#log" do
       subject {@min.log}
@@ -52,7 +51,6 @@ describe Minimization::Unidimensional, "subclass" do
       @min.x_minimum.should be_within(@min.epsilon).of(@p1)
     end
     it "should f(x) be correct" do 
-
       @min.f_minimum.should be_within(@min.epsilon).of(@p2)
     end
     context "#log" do
