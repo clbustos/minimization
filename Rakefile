@@ -1,15 +1,7 @@
 # -*- ruby -*-
 
 require 'rubygems'
-require 'hoe'
 require './lib/minimization'
-Hoe.plugin :git
-
-Hoe.spec 'minimization' do
-	self.version=Minimization::VERSION
-	self.developer('Claudio Bustos', 'clbustos_AT_gmail.com')
-	self.remote_rdoc_dir = 'minimization'
-    self.extra_deps << ['text-table', "~>1.2"]
-end
-
+require 'bundler'
+Bundler::GemHelper.install_tasks
 # vim: syntax=ruby
