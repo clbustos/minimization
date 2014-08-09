@@ -22,21 +22,18 @@
 # files. Therefore this file is under Apache License Version 2.
 #
 # Powell's Algorithm for Multidimensional minimization
-require "#{File.dirname(__FILE__)}/point_value_pair.rb"
-require "#{File.dirname(__FILE__)}/minimization.rb"
+require "#{File.expand_path(File.dirname(__FILE__))}/point_value_pair.rb"
+require "#{File.expand_path(File.dirname(__FILE__))}/minimization.rb"
 
 module Minimization
   class ConjugateDirectionMinimizer
     attr_accessor :max_iterations
-    attr_accessor :max_evaluations
     attr_accessor :max_brent_iterations
     attr_accessor :x_minimum
     attr_accessor :f_minimum
 
     # default maximum Powell's iteration value
     Max_Iterations_Default      = 100
-    # default Max function evaluation value
-    Max_Evaluations_Default     = 100
     # default Brent iteration value
     MAX_BRENT_ITERATION_DEFAULT = 10   # give a suitable value
 
@@ -44,7 +41,6 @@ module Minimization
       @iterations           = 0
       @max_iterations       = Max_Iterations_Default
       @evaluations          = 0
-      @max_evaluations      = Max_Evaluations_Default
       @max_brent_iterations = MAX_BRENT_ITERATION_DEFAULT
       @converging           = true
 
@@ -70,8 +66,6 @@ module Minimization
 
     # set minimization function
     def f(x)
-      # check whether maximum iterations limit reached
-      raise "Too many evaluations : #{@max_evaluations}" if @evaluations > @max_evaluations
       @f.call(x)
     end
     

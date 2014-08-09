@@ -30,7 +30,6 @@ module Minimization
 
     EPSILON_DEFAULT         = 1e-6
     MAX_ITERATIONS_DEFAULT  = 1000000
-    MAX_EVALUATIONS_DEFAULT = 1000000
 
     attr_reader :x_minimum
     attr_reader :f_minimum
@@ -40,8 +39,6 @@ module Minimization
       @epsilon             = EPSILON_DEFAULT
       # Default number of maximum iterations
       @max_iterations      = MAX_ITERATIONS_DEFAULT
-      # Default number of maximum iterations
-      @max_evaluations     = MAX_EVALUATIONS_DEFAULT
       # proc which iterates the simplex
       @iterate_simplex_ref = iterate_simplex_ref
       @relative_threshold  = 100 * @epsilon
@@ -64,8 +61,6 @@ module Minimization
     end
 
     def f(x)
-      @evaluations += 1
-      raise "evaluation error!" if (@evaluations > @max_evaluations)
       return @f.call(x)
     end
 
@@ -197,15 +192,17 @@ module Minimization
     end
   end
 
-    # = Nelder Mead Minimizer.
-    # A multidimensional minimization methods.
-    # == Usage.
-    #  require 'minimization'
-    #  min=Minimization::NelderMead.new(proc {|x| (x[0] - 2)**2}, [1, 2]}
-    #  min.minimize
-    #  min.x_minimum
-    #  min.f_minimum
-    #
+  # = Nelder Mead Minimizer.
+  # A multidimensional minimization methods.
+  # == Usage.
+  #  require 'minimization'
+  #  min=Minimization::NelderMead.new(proc {|x| (x[0] - 2)**2 + (x[1] - 5)**2}, [1, 2])
+  #  while min.converging?
+  #    min.minimize
+  #  end
+  #  min.x_minimum
+  #  min.f_minimum
+  #
   class NelderMead < DirectSearchMinimizer
     def initialize(f, start_point)
       # Reflection coefficient

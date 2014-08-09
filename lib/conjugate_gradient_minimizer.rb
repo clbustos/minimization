@@ -1,9 +1,22 @@
-require "#{File.dirname(__FILE__)}/point_value_pair.rb"
-require "#{File.dirname(__FILE__)}/minimization.rb"
-require "#{File.dirname(__FILE__)}/brent_root_finder.rb"
+require "#{File.expand_path(File.dirname(__FILE__))}/point_value_pair.rb"
+require "#{File.expand_path(File.dirname(__FILE__))}/minimization.rb"
+require "#{File.expand_path(File.dirname(__FILE__))}/brent_root_finder.rb"
 
 module Minimization
 
+  # = Conjugate Gradient minimizer.
+  # A multidimensional minimization methods.
+  # == Usage.
+  #  require 'minimization'
+  #  f  = proc{ |x| (x[0] - 2)**2 + (x[1] - 5)**2 + (x[2] - 100)**2 }
+  #  fd = proc{ |x| [ 2 * (x[0] - 2) , 2 * (x[1] - 5) , 2 * (x[2] - 100) ] }
+  #  min = Minimization::NonLinearConjugateGradientMinimizer.new(f, fd, [0, 0, 0], :polak_ribiere)
+  #  while(min.converging?)
+  #    min.minimize
+  #  end
+  #  min.x_minimum
+  #  min.f_minimum
+  #
   class NonLinearConjugateGradientMinimizer
 
     attr_reader :x_minimum
@@ -12,7 +25,6 @@ module Minimization
 
     attr_accessor :initial_step
 
-    MAX_EVALUATIONS_DEFAULT = 100000
     MAX_ITERATIONS_DEFAULT  = 100000
     EPSILON_DEFAULT         = 1e-6
 
@@ -26,7 +38,6 @@ module Minimization
       @start_point = start_point
 
       @max_iterations     = MAX_ITERATIONS_DEFAULT
-      @max_evaluations    = MAX_EVALUATIONS_DEFAULT
       @iterations         = 0
       @update_formula     = beta_formula
       @relative_threshold = 100 * @epsilon
@@ -55,8 +66,6 @@ module Minimization
     end
 
     def f(x)
-      @iterations += 1
-      raise "max evaluation limit exeeded: #{@max_iterations}" if @iterations > @max_iterations
       return @f.call(x)
     end
 
@@ -121,6 +130,7 @@ module Minimization
       return dot_product
     end
     
+    # iterate one step of conjugate gradient minimizer
     def minimize
       @iterations  += 1
       @previous     = @current
@@ -177,7 +187,5 @@ module Minimization
         end
       end
     end
-
   end
-
 end
