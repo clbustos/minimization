@@ -22,7 +22,7 @@
 #
 # Nelder Mead Algorithm for Multidimensional minimization
 
-require "#{File.dirname(__FILE__)}/point_value_pair.rb"
+require "#{File.expand_path(File.dirname(__FILE__))}/point_value_pair.rb"
 
 module Minimization
 
