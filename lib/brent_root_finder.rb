@@ -94,11 +94,5 @@ module Minimization
         end
       end
     end
-
   end
-
 end
-
-#root = Minimization::BrentRootFinder.new(nil)
-#func = proc{|x| (x-3.5872)**2}
-#puts root.find_root(0, 5, func)

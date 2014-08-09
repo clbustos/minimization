@@ -146,14 +146,14 @@ module Minimization
   # == Usage.
   #  require 'minimization'
   #  f = proc{ |x| (x[0] - 1)**2 + (2*x[1] - 5)**2 + (x[2]-3.3)**2}
-  #  min = Minimization::PowellMinimizer.new(f, [1, 2, 3], [0, 0, 0], [5, 5, 5])
+  #  min = Minimization::Powell.new(f, [1, 2, 3], [0, 0, 0], [5, 5, 5])
   #  while(min.converging?)
   #    min.minimize
   #  end
   #  min.f_minimum
   #  min.x_minimum
   #
-  class PowellMinimizer < ConjugateDirectionMinimizer
+  class Powell < ConjugateDirectionMinimizer
 
     attr_accessor :relative_threshold
     attr_accessor :absolute_threshold
