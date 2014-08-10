@@ -1,6 +1,6 @@
 require "./../lib/multidim/conjugate_gradient.rb"
 
-describe Minimization::NonLinearConjugateGradientMinimizer do
+describe Minimization::PolakRibiere do
 
   before :all do
     @n           = 3
@@ -20,7 +20,7 @@ describe Minimization::NonLinearConjugateGradientMinimizer do
     # fletcher_reeves example 1
     f  = proc{ |x| (x[0] - @p[0])**2 + (x[1] - @p[1])**2 + (x[2] - @p[2])**2 }
     fd = proc{ |x| [ 2 * (x[0] - @p[0]) , 2 * (x[1] - @p[1]) , 2 * (x[2] - @p[2]) ] }
-    @min1 = Minimization::NonLinearConjugateGradientMinimizer.new(f, fd, @start_point, :fletcher_reeves)
+    @min1 = Minimization::PolakRibiere.new(f, fd, @start_point)
     while(@min1.converging?)
       @min1.minimize
     end
@@ -34,7 +34,7 @@ describe Minimization::NonLinearConjugateGradientMinimizer do
             r2 = ( @p[0]*x[0] + @p[1]*x[1] + @p[2]*x[2] ) * 2 * @p[2]
             [r0, r1, r2]
           }
-    @min2 = Minimization::NonLinearConjugateGradientMinimizer.new(f2, fd2, @start_point, :fletcher_reeves)
+    @min2 = Minimization::PolakRibiere.new(f2, fd2, @start_point)
     while(@min2.converging?)
       @min2.minimize
     end
@@ -43,7 +43,7 @@ describe Minimization::NonLinearConjugateGradientMinimizer do
     f3  = proc{ |x| ( (x[0] - @p[0])**2 + @k ) }
     fd3 = proc{ |x| [ (x[0] - @p[0]) * 2 ] }
     starting_point_3 = [rand(@limit)]
-    @min3 = Minimization::NonLinearConjugateGradientMinimizer.new(f3, fd3, starting_point_3, :fletcher_reeves)
+    @min3 = Minimization::PolakRibiere.new(f3, fd3, starting_point_3)
     while(@min3.converging?)
       @min3.minimize
     end

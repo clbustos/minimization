@@ -4,19 +4,8 @@ require "#{File.expand_path(File.dirname(__FILE__))}/brent_root_finder.rb"
 
 module Minimization
 
-  # = Conjugate Gradient minimizer.
-  # A multidimensional minimization methods.
-  # == Usage.
-  #  require 'minimization'
-  #  f  = proc{ |x| (x[0] - 2)**2 + (x[1] - 5)**2 + (x[2] - 100)**2 }
-  #  fd = proc{ |x| [ 2 * (x[0] - 2) , 2 * (x[1] - 5) , 2 * (x[2] - 100) ] }
-  #  min = Minimization::NonLinearConjugateGradientMinimizer.new(f, fd, [0, 0, 0], :polak_ribiere)
-  #  while(min.converging?)
-  #    min.minimize
-  #  end
-  #  min.x_minimum
-  #  min.f_minimum
-  #
+  # Conjugate Gradient minimizer class
+  # The beta function may be :fletcher_reeves or :polak_ribiere
   class NonLinearConjugateGradientMinimizer
 
     attr_reader :x_minimum
@@ -188,4 +177,44 @@ module Minimization
       end
     end
   end
+  
+  
+  # = Conjugate Gradient Fletcher Reeves minimizer.
+  # A multidimensional minimization methods.
+  # == Usage.
+  #  require 'minimization'
+  #  f  = proc{ |x| (x[0] - 2)**2 + (x[1] - 5)**2 + (x[2] - 100)**2 }
+  #  fd = proc{ |x| [ 2 * (x[0] - 2) , 2 * (x[1] - 5) , 2 * (x[2] - 100) ] }
+  #  min = Minimization::FletcherReeves.new(f, fd, [0, 0, 0])
+  #  while(min.converging?)
+  #    min.minimize
+  #  end
+  #  min.x_minimum
+  #  min.f_minimum
+  #
+  class FletcherReeves < NonLinearConjugateGradientMinimizer
+    def initialize(f, fd, start_point)
+      super(f, fd, start_point, :fletcher_reeves)
+    end
+  end
+
+  # = Conjugate Gradient Polak Ribbiere minimizer.
+  # A multidimensional minimization methods.
+  # == Usage.
+  #  require 'minimization'
+  #  f  = proc{ |x| (x[0] - 2)**2 + (x[1] - 5)**2 + (x[2] - 100)**2 }
+  #  fd = proc{ |x| [ 2 * (x[0] - 2) , 2 * (x[1] - 5) , 2 * (x[2] - 100) ] }
+  #  min = Minimization::PolakRibiere.new(f, fd, [0, 0, 0])
+  #  while(min.converging?)
+  #    min.minimize
+  #  end
+  #  min.x_minimum
+  #  min.f_minimum
+  #
+  class PolakRibiere < NonLinearConjugateGradientMinimizer
+    def initialize(f, fd, start_point)
+      super(f, fd, start_point, :polak_ribiere)
+    end
+  end
+
 end
