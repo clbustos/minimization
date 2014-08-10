@@ -14,51 +14,53 @@ module Minimization
       end
     end
 
-    def find_root(lo, hi, f)
-      a  = lo
-      fa = f.call(lo)
-      b  = hi
-      fb = f.call(hi)
-      c  = a
-      fc = fa
-      d  = b - a
+    def f(x)
+      return @f.call(x)
+    end
+
+    def find_root(lower_bound, upper_bound, f)
+      @f = f
+      lower  = lower_bound
+      f_upper = f(lower_bound)
+      upper  = upper_bound
+      f_lower = f(upper_bound)
+      c  = lower
+      fc = f_upper
+      d  = upper - lower
       e  = d
 
-      t   = EPSILON # Absolute Accuracy
-      eps = EPSILON # Relative Accuracy
+      absolute_accuracy = EPSILON
+      relative_accuracy = EPSILON
 
       loop do
         @iterations += 1
-        if (fc.abs < fb.abs)
-          a  = b
-          b  = c
-          c  = a
-          fa = fb
-          fb = fc
-          fc = fa
+        if (fc.abs < f_lower.abs)
+          lower  = upper
+          upper  = c
+          c  = lower
+          f_upper = f_lower
+          f_lower = fc
+          fc = f_upper
         end
 
-        tol = 2 * eps * b.abs + t
-        m   = 0.5 * (c - b)
+        tolerance = 2 * relative_accuracy * upper.abs + absolute_accuracy
+        m   = 0.5 * (c - upper)
 
-        if (m.abs <= tol or fb.abs < EPSILON)
-          return b
+        if (m.abs <= tolerance or f_lower.abs < EPSILON or @iterations > @max_iterations)
+          return upper
         end
-        if(@iterations > @max_iterations)
-          return b
-        end
-        if (e.abs < tol or fa.abs <= fb.abs)
+        if (e.abs < tolerance or f_upper.abs <= f_lower.abs)
           d = m
           e = d
         else 
-          s = fb / fa
-          if (a == c)
+          s = f_lower / f_upper
+          if (lower == c)
             p = 2 * m * s
             q = 1 - s
           else
-            q = fa / fc
-            r = fb / fc
-            p = s * (2 * m * q * (q - r) - (b - a) * (r - 1))
+            q = f_upper / fc
+            r = f_lower / fc
+            p = s * (2 * m * q * (q - r) - (upper - lower) * (r - 1))
             q = (q - 1) * (r - 1) * (s - 1)
           end
           if (p > 0)
@@ -68,28 +70,28 @@ module Minimization
           end
           s = e
           e = d
-          if (p >= 1.5 * m * q - (tol * q).abs or p >= (0.5 * s * q).abs)
+          if (p >= 1.5 * m * q - (tolerance * q).abs or p >= (0.5 * s * q).abs)
             d = m
             e = d
           else
             d = p / q
           end
         end
-        a  = b
-        fa = fb
+        lower  = upper
+        f_upper = f_lower
 
-        if (d.abs > tol)
-          b += d
+        if (d.abs > tolerance)
+          upper += d
         elsif (m > 0)
-          b += tol
+          upper += tolerance
         else
-          b -= tol
+          upper -= tolerance
         end
-        fb = f.call(b)
-        if ((fb > 0 and fc > 0) or (fb <= 0 and fc <= 0))
-          c  = a
-          fc = fa
-          d  = b - a
+        f_lower = f(upper)
+        if ((f_lower > 0 and fc > 0) or (f_lower <= 0 and fc <= 0))
+          c  = lower
+          fc = f_upper
+          d  = upper - lower
           e  = d
         end
       end
