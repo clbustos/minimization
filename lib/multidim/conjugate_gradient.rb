@@ -1,5 +1,5 @@
 require "#{File.expand_path(File.dirname(__FILE__))}/point_value_pair.rb"
-require "#{File.expand_path(File.dirname(__FILE__))}/minimization.rb"
+require "#{File.expand_path(File.dirname(__FILE__))}/../minimization.rb"
 require "#{File.expand_path(File.dirname(__FILE__))}/brent_root_finder.rb"
 
 module Minimization
