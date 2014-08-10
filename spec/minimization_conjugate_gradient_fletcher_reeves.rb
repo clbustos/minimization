@@ -1,4 +1,4 @@
-require "./../lib/conjugate_gradient.rb"
+require "./../lib/multidim/conjugate_gradient.rb"
 
 describe Minimization::NonLinearConjugateGradientMinimizer do
 
