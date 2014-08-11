@@ -12,7 +12,7 @@ Gem::Specification.new do |s|
   s.files         = `git ls-files`.split("\n")
   s.test_files    = `git ls-files -- {test,spec,features}/*`.split("\n")
   s.executables   = `git ls-files -- bin/*`.split("\n").map{ |f| File.basename(f) }
-  s.require_paths = ["lib"]
+  s.require_paths = ["lib", "lib/multidim"]
   #s.homepage = "http://ruby-statsample.rubyforge.org/""
   s.summary = "A suite for minimization in Ruby"
   s.add_runtime_dependency 'text-table', '~>1.2'
