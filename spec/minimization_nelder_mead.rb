@@ -1,4 +1,4 @@
-require "./../lib/multidim/nelder_mead.rb"
+require "#{File.expand_path(File.dirname(__FILE__))}/../lib/multidim/nelder_mead.rb"
 
 describe Minimization::NelderMead do
   before :all do

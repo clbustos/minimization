@@ -1,4 +1,4 @@
-require "./../lib/multidim/powell.rb"
+require "#{File.expand_path(File.dirname(__FILE__))}/../lib/multidim/powell.rb"
 
 describe Minimization::Powell do
   before :all do

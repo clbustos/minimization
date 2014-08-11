@@ -1,4 +1,4 @@
-require "./../lib/multidim/conjugate_gradient.rb"
+require "#{File.expand_path(File.dirname(__FILE__))}/../lib/multidim/conjugate_gradient.rb"
 
 describe Minimization::PolakRibiere do
 
