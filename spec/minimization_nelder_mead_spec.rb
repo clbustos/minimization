@@ -18,25 +18,16 @@ describe Minimization::NelderMead do
 
     # example 1
     f = proc{ |x| (x[0] - @p[0])**2 + (x[1] - @p[1])**2 + (x[2] - @p[2])**2 }
-    @min1 = Minimization::NelderMead.new(f, @start_point)
-    while(@min1.converging?)
-      @min1.minimize
-    end
+    @min1 = Minimization::NelderMead.minimize(f, @start_point)
 
     # example 2
     @k = rand(@limit)
     f2 = proc{ |x| ( @p[0]*x[0] + @p[1]*x[1] + @p[2]*x[2] )**2 +  @k}
-    @min2 = Minimization::NelderMead.new(f2, @start_point)
-    while(@min2.converging?)
-      @min2.minimize
-    end
+    @min2 = Minimization::NelderMead.minimize(f2, @start_point)
 
     # example 3 : unidimensional
     f3 = proc{ |x| (x[0] - @p[0])**2 + @k}
-    @min3 = Minimization::NelderMead.new(f3, [@k])
-    while(@min3.converging?)
-      @min3.minimize
-    end
+    @min3 = Minimization::NelderMead.minimize(f3, [@k])
   end
 
   it "#x_minimum be close to expected in example 1" do 

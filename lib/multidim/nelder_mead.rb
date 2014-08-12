@@ -176,8 +176,31 @@ module Minimization
       @simplex[n] = point_value_pair
     end
 
-    # iterate one step
-    def minimize
+    # Convenience method to minimize
+    # == Parameters:
+    # * <tt>start_point</tt>: Starting points
+    # * <tt>f</tt>: Function to minimize
+    # == Usage:
+    #   minimizer=Minimization::NelderMead.minimize(proc{|x| (x[0] - 1) ** 2 + (x[1] - 5) ** 2}, [0, 0])
+    #
+    def self.minimize(f, start_point)
+      min=Minimization::NelderMead.new(f, start_point)
+      while min.converging?
+        min.iterate
+      end
+      return min
+    end
+
+    # Iterate the simplex one step. Use this when iteration needs to be done manually
+    # == Usage:
+    #   minimizer=Minimization::NelderMead.new(proc{|x| (x[0] - 1) ** 2 + (x[1] - 5) ** 2}, [0, 0])
+    #   while minimizer.converging?
+    #     minimizer.Iterate
+    #   end
+    #   minimizer.x_minimum
+    #   minimizer.f_minimum
+    #
+    def iterate
       # set previous simplex as the current simplex
       @previous = Array.new(@simplex.length)
       0.upto(@simplex.length - 1) do |i|
@@ -198,7 +221,7 @@ module Minimization
   #  require 'minimization'
   #  min=Minimization::NelderMead.new(proc {|x| (x[0] - 2)**2 + (x[1] - 5)**2}, [1, 2])
   #  while min.converging?
-  #    min.minimize
+  #    min.iterate
   #  end
   #  min.x_minimum
   #  min.f_minimum
