@@ -18,25 +18,16 @@ describe Minimization::Powell do
 
     # example 1
     f = proc{ |x| (x[0] - @p[0])**2 + (x[1] - @p[1])**2 + (x[2] - @p[2])**2 }
-    @min1 = Minimization::Powell.new(f, @start_point, [-@limit, -@limit, -@limit], [@limit, @limit, @limit])
-    while(@min1.converging?)
-      @min1.minimize
-    end
+    @min1 = Minimization::Powell.minimize(f, @start_point, [-@limit, -@limit, -@limit], [@limit, @limit, @limit])
 
     # example 2
     @k = rand(@limit)
     f2 = proc{ |x| ( @p[0]*x[0] + @p[1]*x[1] + @p[2]*x[2] )**2 +  @k}
-    @min2 = Minimization::Powell.new(f2, @start_point, [-@limit, -@limit, -@limit], [@limit, @limit, @limit])
-    while(@min2.converging?)
-      @min2.minimize
-    end
+    @min2 = Minimization::Powell.minimize(f2, @start_point, [-@limit, -@limit, -@limit], [@limit, @limit, @limit])
 
     # example 3 : unidimensional
     f3 = proc{ |x| (x[0] - @p[0])**2 + @k}
-    @min3 = Minimization::Powell.new(f3, @start_point, [-@limit, -@limit, -@limit], [@limit, @limit, @limit])
-    while(@min3.converging?)
-      @min3.minimize
-    end
+    @min3 = Minimization::Powell.minimize(f3, @start_point, [-@limit, -@limit, -@limit], [@limit, @limit, @limit])
 
   end
 

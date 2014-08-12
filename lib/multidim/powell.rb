@@ -146,10 +146,7 @@ module Minimization
   # == Usage.
   #  require 'minimization'
   #  f = proc{ |x| (x[0] - 1)**2 + (2*x[1] - 5)**2 + (x[2]-3.3)**2}
-  #  min = Minimization::Powell.new(f, [1, 2, 3], [0, 0, 0], [5, 5, 5])
-  #  while(min.converging?)
-  #    min.minimize
-  #  end
+  #  min = Minimization::Powell.minimize(f, [1, 2, 3], [0, 0, 0], [5, 5, 5])
   #  min.f_minimum
   #  min.x_minimum
   #
@@ -193,8 +190,22 @@ module Minimization
       return {:point => new_point, :dir => new_dir}
     end
 
-    # Iterate Powell's minimizer
-    def minimize
+    # Iterate Powell's minimizer one step
+    # == Parameters:
+    # * <tt>f</tt>: Function to minimize
+    # * <tt>starting_point</tt>: starting point
+    # * <tt>lower_bound</tt>: Lowest possible values of each direction
+    # * <tt>upper_bound</tt>: Highest possible values of each direction
+    # == Usage:
+    #   minimizer = Minimization::Powell.new(proc{|x| (x[0] - 1)**2 + (x[1] -1)**2},
+    #                               [0, 0, 0], [-5, -5, -5], [5, 5, 5])
+    #   while minimizer.converging?
+    #     minimizer.iterate
+    #   end
+    #   minimizer.x_minimum
+    #   minimizer.f_minimum
+    #
+    def iterate 
       @iterations += 1
 
       # set initial configurations
@@ -282,6 +293,26 @@ module Minimization
           @direc[last_ind] = new_dir
         end
       end
+    end
+
+    # Convenience method to minimize
+    # == Parameters:
+    # * <tt>f</tt>: Function to minimize
+    # * <tt>starting_point</tt>: starting point
+    # * <tt>lower_bound</tt>: Lowest possible values of each direction
+    # * <tt>upper_bound</tt>: Highest possible values of each direction
+    # == Usage:
+    #   minimizer = Minimization::Powell.minimize(proc{|x| (x[0] - 1)**2 + (x[1] -1)**2},
+    #                               [0, 0, 0], [-5, -5, -5], [5, 5, 5])
+    #   minimizer.x_minimum
+    #   minimizer.f_minimum
+    #
+    def self.minimize(f, starting_point, lower_bound, upper_bound)
+      min = Minimization::Powell.new(f, starting_point, lower_bound, upper_bound)
+      while min.converging?
+        min.iterate
+      end
+      return min
     end
 
   end
