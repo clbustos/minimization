@@ -120,7 +120,17 @@ module Minimization
     end
     
     # iterate one step of conjugate gradient minimizer
-    def minimize
+    # == Usage:
+    #  f  = proc{ |x| (x[0] - 2)**2 + (x[1] - 5)**2 + (x[2] - 100)**2 }
+    #  fd = proc{ |x| [ 2 * (x[0] - 2) , 2 * (x[1] - 5) , 2 * (x[2] - 100) ] }
+    #  min = Minimization::FletcherReeves.new(f, fd, [0, 0, 0])
+    #  while(min.converging?)
+    #    min.iterate
+    #  end
+    #  min.x_minimum
+    #  min.f_minimum
+    #
+    def iterate
       @iterations  += 1
       @previous     = @current
       @current      = Minimization::PointValuePair.new(@point, f(@point))
@@ -185,16 +195,31 @@ module Minimization
   #  require 'minimization'
   #  f  = proc{ |x| (x[0] - 2)**2 + (x[1] - 5)**2 + (x[2] - 100)**2 }
   #  fd = proc{ |x| [ 2 * (x[0] - 2) , 2 * (x[1] - 5) , 2 * (x[2] - 100) ] }
-  #  min = Minimization::FletcherReeves.new(f, fd, [0, 0, 0])
-  #  while(min.converging?)
-  #    min.minimize
-  #  end
+  #  min = Minimization::FletcherReeves.minimize(f, fd, [0, 0, 0])
   #  min.x_minimum
   #  min.f_minimum
   #
   class FletcherReeves < NonLinearConjugateGradientMinimizer
     def initialize(f, fd, start_point)
       super(f, fd, start_point, :fletcher_reeves)
+    end
+
+    # Convenience method to minimize using Fletcher Reeves method
+    # == Parameters:
+    # * <tt>f</tt>: Function to minimize
+    # * <tt>fd</tt>: First derivative of f
+    # * <tt>start_point</tt>: Starting point
+    # == Usage:
+    #  f  = proc{ |x| (x[0] - 2)**2 + (x[1] - 5)**2 + (x[2] - 100)**2 }
+    #  fd = proc{ |x| [ 2 * (x[0] - 2) , 2 * (x[1] - 5) , 2 * (x[2] - 100) ] }
+    #  min = Minimization::FletcherReeves.minimize(f, fd, [0, 0, 0])
+    #
+    def self.minimize(f, fd, start_point)
+      min = Minimization::FletcherReeves.new(f, fd, start_point)
+      while(min.converging?)
+        min.iterate
+      end
+      return min
     end
   end
 
@@ -204,16 +229,31 @@ module Minimization
   #  require 'minimization'
   #  f  = proc{ |x| (x[0] - 2)**2 + (x[1] - 5)**2 + (x[2] - 100)**2 }
   #  fd = proc{ |x| [ 2 * (x[0] - 2) , 2 * (x[1] - 5) , 2 * (x[2] - 100) ] }
-  #  min = Minimization::PolakRibiere.new(f, fd, [0, 0, 0])
-  #  while(min.converging?)
-  #    min.minimize
-  #  end
+  #  min = Minimization::PolakRibiere.minimize(f, fd, [0, 0, 0])
   #  min.x_minimum
   #  min.f_minimum
   #
   class PolakRibiere < NonLinearConjugateGradientMinimizer
     def initialize(f, fd, start_point)
       super(f, fd, start_point, :polak_ribiere)
+    end
+
+    # Convenience method to minimize using Polak Ribiere method
+    # == Parameters:
+    # * <tt>f</tt>: Function to minimize
+    # * <tt>fd</tt>: First derivative of f
+    # * <tt>start_point</tt>: Starting point
+    # == Usage:
+    #  f  = proc{ |x| (x[0] - 2)**2 + (x[1] - 5)**2 + (x[2] - 100)**2 }
+    #  fd = proc{ |x| [ 2 * (x[0] - 2) , 2 * (x[1] - 5) , 2 * (x[2] - 100) ] }
+    #  min = Minimization::PolakRibiere.minimize(f, fd, [0, 0, 0])
+    #
+    def self.minimize(f, fd, start_point)
+      min = Minimization::PolakRibiere.new(f, fd, start_point)
+      while(min.converging?)
+        min.iterate
+      end
+      return min
     end
   end
 

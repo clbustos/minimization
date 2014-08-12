@@ -20,20 +20,14 @@ describe Minimization::PolakRibiere do
     # example 1
     f  = proc{ |x| (x[0] - @p[0])**2 + (x[1] - @p[1])**2 + (x[2] - @p[2])**2 }
     fd = proc{ |x| [ 2 * (x[0] - @p[0]) , 2 * (x[1] - @p[1]) , 2 * (x[2] - @p[2]) ] }
-    @min1 = Minimization::PolakRibiere.new(f, fd, @start_point)
-    while(@min1.converging?)
-      @min1.minimize
-    end
+    @min1 = Minimization::PolakRibiere.minimize(f, fd, @start_point)
 
     # example 2 : unidimensional
     @k = rand(@limit)
     f2  = proc{ |x| ( (x[0] - @p[0])**2 + @k ) }
     fd2 = proc{ |x| [ (x[0] - @p[0]) * 2 ] }
     starting_point_2 = [rand(@limit)]
-    @min2 = Minimization::PolakRibiere.new(f2, fd2, starting_point_2)
-    while(@min2.converging?)
-      @min2.minimize
-    end
+    @min2 = Minimization::PolakRibiere.minimize(f2, fd2, starting_point_2)
 
   end
 
