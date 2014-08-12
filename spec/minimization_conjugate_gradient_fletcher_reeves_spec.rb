@@ -1,6 +1,6 @@
 require "#{File.expand_path(File.dirname(__FILE__))}/../lib/multidim/conjugate_gradient.rb"
 
-describe Minimization::PolakRibiere do
+describe Minimization::FletcherReeves do
 
   before :all do
     @n           = 3
@@ -18,9 +18,10 @@ describe Minimization::PolakRibiere do
     end
 
     # fletcher_reeves example 1
+    puts @p.inspect
     f  = proc{ |x| (x[0] - @p[0])**2 + (x[1] - @p[1])**2 + (x[2] - @p[2])**2 }
     fd = proc{ |x| [ 2 * (x[0] - @p[0]) , 2 * (x[1] - @p[1]) , 2 * (x[2] - @p[2]) ] }
-    @min1 = Minimization::PolakRibiere.minimize(f, fd, @start_point)
+    @min1 = Minimization::FletcherReeves.minimize(f, fd, @start_point)
 
     # fletcher_reeves example 2
     @k = rand(@limit)
@@ -31,13 +32,13 @@ describe Minimization::PolakRibiere do
             r2 = ( @p[0]*x[0] + @p[1]*x[1] + @p[2]*x[2] ) * 2 * @p[2]
             [r0, r1, r2]
           }
-    @min2 = Minimization::PolakRibiere.minimize(f2, fd2, @start_point)
+    @min2 = Minimization::FletcherReeves.minimize(f2, fd2, @start_point)
 
     # fletcher_reeves example 3 : unidimensional
     f3  = proc{ |x| ( (x[0] - @p[0])**2 + @k ) }
     fd3 = proc{ |x| [ (x[0] - @p[0]) * 2 ] }
     starting_point_3 = [rand(@limit)]
-    @min3 = Minimization::PolakRibiere.minimize(f3, fd3, starting_point_3)
+    @min3 = Minimization::FletcherReeves.minimize(f3, fd3, starting_point_3)
 
   end
 
