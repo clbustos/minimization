@@ -1,4 +1,4 @@
-# = Nelder_Mead.rb -
+# = nelder_mead.rb -
 # Minimization- Minimization algorithms on pure Ruby
 # Copyright (C) 2010 Claudio Bustos
 #

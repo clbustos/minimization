@@ -1,13 +1,37 @@
+# = brent_root_finder.rb -
+# Minimization- Minimization algorithms on pure Ruby
+# Copyright (C) 2010 Claudio Bustos
+#
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License
+# as published by the Free Software Foundation; either version 2
+# of the License, or (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+#
+# Nelder Mead Algorithm for Multidimensional minimization
+
 module Minimization
 
+  # Brent's root finding method.  
+  # == Usage
+  #   f   = lambda {|x| x**2}
+  #   root_finder = Minimization::BrentRootFinder.new(100000)
+  #   root_finder.find_root(-1000,1000, f)
+  #
   class BrentRootFinder
-
     attr_accessor :max_iterations
-
-    MAX_ITERATIONS_DEFAULT = 10000
+    MAX_ITERATIONS_DEFAULT = 10e6
     EPSILON                = 10e-10
 
-    def initialize(max_iterations)
+    def initialize(max_iterations=nil)
       @iterations = 0
       if (@max_iterations.nil?)
         @max_iterations = MAX_ITERATIONS_DEFAULT
@@ -50,9 +74,11 @@ module Minimization
           return upper
         end
         if (e.abs < tolerance or f_upper.abs <= f_lower.abs)
+          # use bisection
           d = m
           e = d
         else 
+          # use inverse cubic interpolation
           s = f_lower / f_upper
           if (lower == c)
             p = 2 * m * s
@@ -71,12 +97,14 @@ module Minimization
           s = e
           e = d
           if (p >= 1.5 * m * q - (tolerance * q).abs or p >= (0.5 * s * q).abs)
+            # interpolation failed, fall back to bisection
             d = m
             e = d
           else
             d = p / q
           end
         end
+        # Update the best estimate of the root and bounds on each iteration
         lower  = upper
         f_upper = f_lower
 
