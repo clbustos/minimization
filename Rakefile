@@ -2,8 +2,6 @@
 
 require 'rubygems'
 require 'bundler'
-require './lib/minimization'
-require './lib/multidim/nelder_mead'
 
 gemspec = eval(IO.read("minimization.gemspec"))
 
@@ -34,7 +32,6 @@ end
 desc "Open an irb session preloaded with distribution"
 task :console do
   sh "irb -rubygems -I lib -r minimization.rb"
-  sh "irb -rubygems -I lib/multidim -r nelder_mead.rb"
 end
 
 task :default => :spec
