@@ -27,9 +27,9 @@ module Minimization
 
   # Brent's root finding method.  
   # == Usage
-  #   f           = lambda {|x| x**2}
-  #   root_finder = Minimization::BrentRootFinder.new(100000)
-  #   min_x       = root_finder.find_root(-1000,1000, f)
+  #  f           = lambda {|x| x**2}
+  #  root_finder = Minimization::BrentRootFinder.new(100000)
+  #  min_x       = root_finder.find_root(-1000,1000, f)
   #
   class BrentRootFinder
     attr_accessor :max_iterations
@@ -47,7 +47,12 @@ module Minimization
       return @f.call(x)
     end
 
-    # gsl brentq algorithm
+    # Find root in interval (lower_bound, upper_bound) of function f
+    # == Parameters:
+    # * <tt>lower_bound</tt>: Lower bound of the minimization search
+    # * <tt>upper_bound</tt>: Upper bound of the minimization search
+    # * <tt>f</tt>: Function to find roots
+    #
     def find_root(lower_bound, upper_bound, f)
       @f = f
       lower  = lower_bound
