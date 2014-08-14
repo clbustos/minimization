@@ -16,6 +16,10 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #
+# This algorith was adopted and ported into Ruby from GNU GSL library's
+# roots/brent.c file. Therefore this file is under under the terms of the GNU
+# General Public License.
+#
 # Nelder Mead Algorithm for Multidimensional minimization
 
 module Minimization
@@ -42,6 +46,7 @@ module Minimization
       return @f.call(x)
     end
 
+    # gsl brentq algorithm
     def find_root(lower_bound, upper_bound, f)
       @f = f
       lower  = lower_bound
