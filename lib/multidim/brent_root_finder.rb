@@ -17,18 +17,19 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #
 # This algorith was adopted and ported into Ruby from GNU GSL library's
-# roots/brent.c file. Therefore this file is under under the terms of the GNU
-# General Public License.
+# brent.c [https://github.com/ampl/gsl/blob/master/roots/brent.c]. Therefore this
+# file is under under the terms of the GNU General Public License.
+# Research Paper - http://maths-people.anu.edu.au/~brent/pd/rpb005.pdf
 #
-# Nelder Mead Algorithm for Multidimensional minimization
+# Brent method for finding roots
 
 module Minimization
 
   # Brent's root finding method.  
   # == Usage
-  #   f   = lambda {|x| x**2}
+  #   f           = lambda {|x| x**2}
   #   root_finder = Minimization::BrentRootFinder.new(100000)
-  #   root_finder.find_root(-1000,1000, f)
+  #   min_x       = root_finder.find_root(-1000,1000, f)
   #
   class BrentRootFinder
     attr_accessor :max_iterations
