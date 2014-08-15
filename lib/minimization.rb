@@ -27,7 +27,6 @@ require_relative 'multidim/powell'
 
 require 'text-table'
 module Minimization
-  VERSION="0.2.1"
   FailedIteration=Class.new(Exception)
   # Base class for unidimensional minimizers
   class Unidimensional

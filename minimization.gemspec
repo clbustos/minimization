@@ -1,11 +1,9 @@
 # -*- encoding: utf-8 -*-
-lib = File.expand_path('../lib/', __FILE__)
-$:.unshift lib unless $:.include?(lib)
-
+require File.expand_path("../lib/minimization/version", __FILE__)
 
 Gem::Specification.new do |s|
   s.name = "minimization"
-  s.version = "0.2.1"
+  s.version = Minimization::VERSION
   s.authors = ["Claudio Bustos"]
   s.description = "Minimization algorithms on pure Ruby"
   s.email = ["clbustos@gmail.com"]
