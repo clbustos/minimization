@@ -13,6 +13,12 @@ Unidimensional:
 * Golden Section
 * Brent (Port of GSL code)
 
+Multidimensional:
+* Fletcher-Reeves (requires first derivative)
+* Polak Rebirer (requires first derivative)
+* Nelder-Mead
+* Powell's method
+
 If you needs speed, use rb-gsl
 
 == SYNOPSIS:
