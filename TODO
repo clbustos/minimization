@@ -1,0 +1,10 @@
+Following functions can be implemented in this module:
+  Unidimensional:
+    * Fibonacci Search Algorithm
+  Multidimensional:
+    * Powell's method
+    * Nelder–Mead method
+ 
+References:
+  * Numerical Recipies in C++, Flannery et al.
+  * Numerical Mathematics and Computing, Kincaid and Cheney
