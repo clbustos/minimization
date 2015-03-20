@@ -1,16 +1,27 @@
-# -*- ruby -*-
+require 'rake'
+require 'bundler/gem_tasks'
+require "rspec/core/rake_task"
+require 'rdoc/task'
 
-require 'rubygems'
-require 'hoe'
-require './lib/minimization'
-Hoe.plugin :git
-
-Hoe.spec 'minimization' do
-	self.version=Minimization::VERSION
-	self.rubyforge_name = 'ruby-statsample' # if different than 'minimization'
-	self.developer('Claudio Bustos', 'clbustos_AT_gmail.com')
-	self.remote_rdoc_dir = 'minimization'
-    self.extra_deps << ['text-table', "~>1.2"]
+# Setup the necessary gems, specified in the gemspec.
+require 'bundler'
+begin
+  Bundler.setup(:default, :development)
+rescue Bundler::BundlerError => e
+  $stderr.puts e.message
+  $stderr.puts "Run `bundle install` to install missing gems"
+  exit e.status_code
 end
+
+RSpec::Core::RakeTask.new(:spec) do |spec|
+  spec.pattern = FileList['spec/**/*_spec.rb']
+end
+
+desc "Open an irb session preloaded with distribution"
+task :console do
+  sh "irb -rubygems -I lib -r minimization.rb"
+end
+
+task :default => [:spec]
 
 # vim: syntax=ruby
