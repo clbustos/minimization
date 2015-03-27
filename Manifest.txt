@@ -1,9 +1,0 @@
-History.txt
-LICENSE.txt
-Manifest.txt
-README.txt
-Rakefile
-lib/minimization.rb
-spec/minimization_unidimensional_spec.rb
-spec/spec.opts
-spec/spec_helper.rb
