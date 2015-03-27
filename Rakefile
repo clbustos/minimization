@@ -1,10 +1,10 @@
 require 'rake'
+require 'bundler'
 require 'bundler/gem_tasks'
 require "rspec/core/rake_task"
 require 'rdoc/task'
 
 # Setup the necessary gems, specified in the gemspec.
-require 'bundler'
 begin
   Bundler.setup(:default, :development)
 rescue Bundler::BundlerError => e
@@ -23,5 +23,3 @@ task :console do
 end
 
 task :default => [:spec]
-
-# vim: syntax=ruby

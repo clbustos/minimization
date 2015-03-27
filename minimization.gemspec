@@ -1,11 +1,13 @@
-# -*- encoding: utf-8 -*-
-lib = File.expand_path('../lib/', __FILE__)
-$:.unshift lib unless $:.include?(lib)
+$LOAD_PATH.unshift File.expand_path('../lib', __FILE__)
 
+require 'date'
+require 'minimization/version'
 
 Gem::Specification.new do |s|
   s.name = "minimization"
-  s.version = "0.2.1"
+  s.version = Minimization::VERSION
+  s.date = Date.today.to_s
+
   s.authors = ["Claudio Bustos", "Rajat Kapoor"]
   s.email = ["clbustos@gmail.com", "rajat100493@gmail.com"]
 
