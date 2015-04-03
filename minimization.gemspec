@@ -20,10 +20,10 @@ Gem::Specification.new do |s|
   s.description = "Minimization algorithms on pure Ruby"
   s.summary = "A suite for minimization in Ruby"
 
-  s.add_runtime_dependency 'text-table', '~>1.2'
-  s.add_runtime_dependency 'rb-gsl', '~>1.2'
-  s.add_development_dependency 'rake', '~>10'
-  s.add_development_dependency 'bundler', '~>1.3'
-  s.add_development_dependency 'rspec', '~>2.0'
-  s.add_development_dependency 'rubyforge', '~>2.0'
+  s.add_runtime_dependency 'text-table', '~> 1.2'
+  s.add_runtime_dependency 'rb-gsl', '~> 1.2'
+
+  s.add_development_dependency 'rake', '~> 10'
+  s.add_development_dependency 'bundler', '~> 1.3'
+  s.add_development_dependency 'rspec', '~> 3.2'
 end
