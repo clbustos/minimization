@@ -1,4 +1,7 @@
-=== 0.2.2 / 2015-04-
+=== 0.2.3 / 2015-04-27
+  * Removed rb-gsl dependency.
+
+=== 0.2.2 / 2015-04-03
   * Added Travis-CI support.
   * Removed Hoe in favor of using a gemspec.
 
