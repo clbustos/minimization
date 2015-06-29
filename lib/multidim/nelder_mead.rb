@@ -119,9 +119,7 @@ module Minimization
         vertex_i = @start_configuration[i]
         0.upto(i) do |j|
           raise "equals vertices #{j} and #{j+1} in simplex configuration" if steps[j] == 0.0
-          0.upto(j) do |k|
-            vertex_i[k] = steps[k]
-          end
+          vertex_i[j] = steps[j]
         end
       end
     end
@@ -203,9 +201,8 @@ module Minimization
     def iterate
       # set previous simplex as the current simplex
       @previous = Array.new(@simplex.length)
-      0.upto(@simplex.length - 1) do |i|
-        point = @simplex[i].point                                # clone require?
-        @previous[i] = PointValuePair.new(point, f(point))
+      @simplex.each_with_index do |v,i| 
+        @previous[i] = PointValuePair.new(v.point, v.value)
       end
       # iterate simplex
       iterate_simplex
