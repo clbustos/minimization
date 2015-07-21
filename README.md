@@ -1,24 +1,27 @@
-# Minimization
+= minimization
 
-[![Build Status](https://travis-ci.org/SciRuby/minimization.svg)](https://travis-ci.org/SciRuby/minimization)
-[![Code Climate](https://codeclimate.com/github/SciRuby/minimization/badges/gpa.svg)](https://codeclimate.com/github/SciRuby/minimization)
+* http://github.com/clbustos/minimization
 
-* https://github.com/sciruby/minimization
+== DESCRIPTION:
 
-## DESCRIPTION
+Minimization algorithms on pure Ruby. 
 
-Minimization algorithms on pure Ruby.
-
-## FEATURES/PROBLEMS
+== FEATURES/PROBLEMS:
 
 Unidimensional:
 * Newton-Rahpson (requires first and second derivative)
 * Golden Section
 * Brent (Port of GSL code)
 
+Multidimensional:
+* Fletcher-Reeves (requires first derivative)
+* Polak Rebirer (requires first derivative)
+* Nelder-Mead
+* Powell's method
+
 If you needs speed, use rb-gsl
 
-## SYNOPSIS
+== SYNOPSIS:
 
 d=Minimization::Brent.new(-1000,20000  , proc {|x| x**2})
 
@@ -27,18 +30,18 @@ d.iterate
 puts d.x_minimum
 puts d.f_minimum
 
-## REQUIREMENTS
+== REQUIREMENTS:
 
 * Pure Ruby
 
-## INSTALL
+== INSTALL:
 
-  sudo gem install minimization
+  sudo gem install minimization 
 
-## API
+== API:
 
 http://ruby-statsample.rubyforge.org/minimization/
 
-## LICENSE
+== LICENSE:
 
-GPL-2 (See LICENSE.txt)
+BSD 2-clause (See LICENSE.txt)
