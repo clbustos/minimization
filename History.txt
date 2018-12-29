@@ -1,14 +1,19 @@
+=== 0.2.3 / 2015-04-27
+  * Removed rb-gsl dependency.
+
+=== 0.2.2 / 2015-04-03
+  * Added Travis-CI support.
+  * Removed Hoe in favor of using a gemspec.
+
 === 0.2.1 / 2010-11-14
-* Added iterations method
+  * Added iterations method.
 
 === 0.2.0 / 2010-04-15
-* New Minimization::NewtonRahpson class, which implements a naive  Newton-Rahpson minimization method 
-  x=x_n-(f'(x)/f''(x))
-=== 0.1.1 / 2010-03-19
+  * New Minimization::NewtonRahpson class, which implements a naive  Newton-Rahpson minimization method
+    `x = x_n - (f'(x) / f''(x))`.
 
-* New Minimization#minimize convenience method
+=== 0.1.1 / 2010-03-19
+  * New Minimization#minimize convenience method.
 
 === 0.1.0 / 2010-02-24
-
-* Golden Section and Brent Algorithm
-
+  * Golden Section and Brent Algorithm.

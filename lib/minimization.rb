@@ -26,6 +26,7 @@ require_relative 'multidim/point_value_pair'
 require_relative 'multidim/powell'
 
 require 'text-table'
+
 module Minimization
   FailedIteration=Class.new(Exception)
   # Base class for unidimensional minimizers
@@ -78,7 +79,7 @@ module Minimization
     # == Usage:
     #   minimizer=Minimization::GoldenSection.minimize(-1000, 1000) {|x|
     #             x**2 }
-    # 
+    #
     def self.minimize(lower,upper,expected=nil,&block)
       minimizer=new(lower,upper,block)
       minimizer.expected=expected unless expected.nil?
@@ -93,7 +94,7 @@ module Minimization
       @proc.call(x)
     end
   end
-  # Classic Newton-Raphson minimization method.  
+  # Classic Newton-Raphson minimization method.
   # Requires first and second derivative
   # == Usage
   #   f   = lambda {|x| x**2}
@@ -103,7 +104,7 @@ module Minimization
   #   min.iterate
   #   min.x_minimum
   #   min.f_minimum
-  #   
+  #
   class NewtonRaphson < Unidimensional
     # == Parameters:
     # * <tt>lower</tt>: Lower possible value
@@ -111,7 +112,7 @@ module Minimization
     # * <tt>proc</tt>: Original function
     # * <tt>proc_1d</tt>: First derivative
     # * <tt>proc_2d</tt>: Second derivative
-    # 
+    #
     def initialize(lower, upper, proc, proc_1d, proc_2d)
       super(lower,upper,proc)
       @proc_1d=proc_1d
@@ -133,8 +134,8 @@ module Minimization
         x=x-(@proc_1d.call(x).quo(@proc_2d.call(x)))
         f_prev=f(x_prev)
         f=f(x)
-        x_min,x_max=[x,x_prev].min, [x,x_prev].max 
-        f_min,f_max=[f,f_prev].min, [f,f_prev].max 
+        x_min,x_max=[x,x_prev].min, [x,x_prev].max
+        f_min,f_max=[f,f_prev].min, [f,f_prev].max
         @log << [k, x_min, x_max, f_min, f_max, (x_prev-x).abs, (f-f_prev).abs]
       end
       raise FailedIteration, "Not converged" if k>=@max_iteration
@@ -193,7 +194,7 @@ module Minimization
           f1 = f(x1);
         end
         @log << [k, x3,x0, f1,f2,(x3-x0).abs, (f1-f2).abs]
-        
+
         k +=1;
       end
 
@@ -254,7 +255,7 @@ module Minimization
       @f_minimum=f(v)
       @do_bracketing=false
     end
-    
+
     def bracketing
       eval_max=10
       f_left = @f_lower;
@@ -330,7 +331,7 @@ module Minimization
         k+=1
         result=brent_iterate
         raise FailedIteration,"Error on iteration" if !result
-        begin 
+        begin
           @log << [k, @x_lower, @x_upper, @f_lower, @f_upper, (@x_lower-@x_upper).abs, (@f_lower-@f_upper).abs]
         rescue =>@e
           @log << [k, @e.to_s,nil,nil,nil,nil,nil]
@@ -449,4 +450,45 @@ module Minimization
 
     end
   end
+
+  # = Bisection Method for Minimization.
+  # See Unidimensional for methods.
+  # == Usage.
+  #  require 'minimization'
+  #  min=Minimization::Bisection.new(1,2  , proc {|x| (x)**3-(x)-2}
+  #  min.iterate
+  #  min.x_minimum
+  #  min.f_minimum
+  #  min.log
+  # Source:
+  #   * R.L. Burden, J. Faires: Numerical Analysis
+  class Bisection < Unidimensional
+
+    def iterate()
+      ax = @lower
+      cx = @upper
+      k = 0;
+      while (ax-cx).abs > @epsilon and k<@max_iteration
+        bx = (ax + cx).quo(2);
+        fa = f(ax);
+        fb = f(bx);
+        fc = f(cx);
+        if (fa*fb <0)
+          cx = bx;
+        else (fb*fc <0)
+          ax = bx;
+        end
+        k +=1;
+        @log << [k, ax.to_f, cx.to_f, f(ax).to_f, f(cx).to_f, (ax-cx).abs.to_f, (f(ax)-f(cx)).abs.to_f]
+      end
+
+      if (fa<fc)
+        @x_minimum,@f_minimum = ax.to_f, f(ax).to_f;
+      else
+        @x_minimum,@f_minimum = cx.to_f, f(cx).to_f;
+      end
+
+    end
+  end
+
 end

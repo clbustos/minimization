@@ -1,11 +1,10 @@
-# -*- ruby -*-
-
-require 'rubygems'
+require 'rake'
 require 'bundler'
-Bundler::GemHelper.install_tasks
+require 'bundler/gem_tasks'
+require "rspec/core/rake_task"
+require 'rdoc/task'
 
-gemspec = eval(IO.read("minimization.gemspec"))
-
+# Setup the necessary gems, specified in the gemspec.
 begin
   Bundler.setup(:default, :development)
 rescue Bundler::BundlerError => e
@@ -14,27 +13,13 @@ rescue Bundler::BundlerError => e
   exit e.status_code
 end
 
-#require "rubygems/package_task"
-#Gem::PackageTask.new(gemspec).define
-
-#desc "install the gem locally"
-#task :install => [:package] do
-#  sh %{gem install pkg/minimization-#{Minimization::VERSION}.gem}
-#end
-
-require 'rspec/core/rake_task'
-require 'rspec/core'
-require 'rspec/core/rake_task'
 RSpec::Core::RakeTask.new(:spec) do |spec|
   spec.pattern = FileList['spec/**/*_spec.rb']
 end
 
-# git log --pretty=format:"*%s[%cn]" v0.5.0..HEAD >> History.txt
-desc "Open an irb session preloaded with minimization"
+desc "Open an irb session preloaded with distribution"
 task :console do
   sh "irb -rubygems -I lib -r minimization.rb"
 end
 
-task :default => :spec
-# vim: syntax=ruby
-
+task :default => [:spec]
