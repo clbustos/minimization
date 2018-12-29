@@ -1,3 +1,11 @@
+=== 0.2.5 / 2018-12-29
+
+  * Fixed gem in RubyGems
+  * Updated travis test
+
+=== 0.2.4 / 2015-07-20
+  * Merge from clbustos repository
+
 === 0.2.3 / 2015-04-27
   * Removed rb-gsl dependency.
 

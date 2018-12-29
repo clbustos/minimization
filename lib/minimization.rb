@@ -1,6 +1,6 @@
 # = minimization.rb -
 # Minimization- Minimization algorithms on pure Ruby
-# Copyright (C) 2010 Claudio Bustos
+# Copyright (C) 2010-2018 Claudio Bustos
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License

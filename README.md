@@ -19,7 +19,7 @@ Multidimensional:
 * Nelder-Mead
 * Powell's method
 
-If you needs speed, use rb-gsl
+If you needs speed, use gem *gsl*
 
 == SYNOPSIS:
 
